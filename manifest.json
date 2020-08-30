@@ -11,7 +11,8 @@
     "*://*/*",
     "storage",
     "webRequest",
-    "webRequestBlocking"
+    "webRequestBlocking",
+    "notifications"
   ],
   "icons": {
     "16": "data/svg/icon2.svg",
