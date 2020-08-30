@@ -1,0 +1,21 @@
+
+{
+  "description": "Unnecessary Javascript is the worst. Control what requests are coming in/out of your browser, per tab, per window, etc.",
+  "manifest_version": 2,
+  "name": "RequestOff",
+  "version": "0.1",
+  "homepage_url": "",
+  "permissions": [
+    "tabs",
+    "<all_urls>"
+  ],
+
+  "sidebar_action": {
+    "default_title": "RequestOff",
+    "default_panel": "sidebar/sidebar.html"
+  },
+
+  "web_accessible_resources": [
+    "/viewer.html"
+  ]
+}
