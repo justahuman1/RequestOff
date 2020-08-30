@@ -4,18 +4,25 @@
   "manifest_version": 2,
   "name": "RequestOff",
   "version": "0.1",
-  "homepage_url": "",
+  "homepage_url": "https://www.github.com/justahuman1",
   "permissions": [
     "tabs",
-    "<all_urls>"
+    "menus",
+    "*://*/*",
+    "storage",
+    "webRequest",
+    "webRequestBlocking"
   ],
-
-  "sidebar_action": {
-    "default_title": "RequestOff",
-    "default_panel": "sidebar/sidebar.html"
+  "icons": {
+    "16": "data/svg/icon2.svg",
+    "32": "data/svg/icon2.svg",
+    "48": "data/svg/icon2.svg",
+    "64": "data/svg/icon2.svg",
+    "128": "data/svg/icon2.svg"
   },
-
-  "web_accessible_resources": [
-    "/viewer.html"
-  ]
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  }
 }
