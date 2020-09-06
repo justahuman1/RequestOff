@@ -12,7 +12,7 @@ browser.menus.create(
 );
 const inMemoryStorage = new Set();
 
-function sendOfflineMessage(tabId, tabTitle) {
+function sendOfflineMessage(tabId, tabTitle = "") {
   // Trigger to add tab to inMemoryStorage if not
   // in set. Else, remove. Provides toggle functionality.
   let dynamicNotiDetails = {};
@@ -28,15 +28,25 @@ function sendOfflineMessage(tabId, tabTitle) {
     inMemoryStorage.add(tabId);
   }
   // Add to block list and send notification
-  browser.notifications.create({
-    type: "basic",
-    title: "RequestOff",
-    ...dynamicNotiDetails,
-  });
+  if (tabTitle) {
+    browser.notifications.create({
+      type: "basic",
+      title: "RequestOff",
+      ...dynamicNotiDetails,
+    });
+  }
 }
 // Communicator with popup html
 browser.runtime.onMessage.addListener((data) => {
-  if (data.type === "getOfflineTabs") return Promise.resolve(inMemoryStorage);
+  switch (data.type) {
+    case "getOfflineTabs":
+      return Promise.resolve(inMemoryStorage);
+    case "addOfflineTab":
+      sendOfflineMessage(Number(data.id));
+      return Promise.resolve(null);
+    default:
+      return;
+  }
 });
 // Shortcut commands
 browser.commands.onCommand.addListener((command) => {

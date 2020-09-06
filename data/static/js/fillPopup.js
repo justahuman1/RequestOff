@@ -27,6 +27,7 @@ async function traverseTabs(tabs) {
     cell1.addEventListener("click", (event) => {
       let uiClickedId = event.target.getAttribute("id");
       if (uiClickedId) {
+        browser.runtime.sendMessage({ type: "addOfflineTab", id: uiClickedId });
       }
     });
   }
