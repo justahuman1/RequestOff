@@ -3,9 +3,6 @@ function generateSlider(tabId, offline) {
     <input ${offline}  type="checkbox" id="${tabId}"/>
     <div class="slider round"></div></label>`;
 }
-function updateBackendOfflineMap(data) {
-  console.log(data);
-}
 async function traverseTabs(tabs) {
   // Communicator between background and UI
   // Get current offline tabs, populate accordingly,
@@ -22,8 +19,8 @@ async function traverseTabs(tabs) {
     if (offlineTabs.has(tab.id))
       cell1.innerHTML = generateSlider(tab.id, "checked");
     else cell1.innerHTML = generateSlider(tab.id);
-
     cell2.innerHTML = tab.title;
+
     cell1.addEventListener("click", (event) => {
       let uiClickedId = event.target.getAttribute("id");
       if (uiClickedId) {
