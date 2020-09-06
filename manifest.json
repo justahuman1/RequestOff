@@ -25,7 +25,7 @@
   "background": {
     "scripts": [
       "background.js"
-        ]
+    ]
   },
   "browser_action": {
     "default_icon": "data/svg/offline.svg",
@@ -40,6 +40,12 @@
         "mac": "MacCtrl+Shift+R"
       },
       "description": "Toggle requests for the current tab"
+    },
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+U",
+        "linux": "Alt+Shift+U"
+      }
     }
   }
 }

@@ -2,7 +2,7 @@ browser.menus.create(
   // Used for context menu (quick toggle)
   {
     id: "offline-tab",
-    title: "Request Off",
+    title: "Toggle Tab Requests",
     contexts: ["all"],
     icons: {
       "16": "data/svg/icon.svg",
