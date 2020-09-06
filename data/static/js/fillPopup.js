@@ -38,7 +38,7 @@ function fillOnlineTab() {
   browser.tabs
     .query({ currentWindow: true })
     .then(traverseTabs)
-    .catch(() => alert("Failed Window Parsing."));
+    .catch(() => alert("Failed Window Parsing.."));
 }
 // Initalizer function for UI
 fillOnlineTab();
