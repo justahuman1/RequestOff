@@ -1,4 +1,3 @@
-
 {
   "description": "Unnecessary Javascript is the worst. Control what requests are coming in/out of your browser, per tab, per window, etc.",
   "manifest_version": 2,
