@@ -1,4 +1,5 @@
 browser.menus.create(
+  // Used for context menu (quick toggle)
   {
     id: "offline-tab",
     title: "Request Off",
@@ -10,6 +11,7 @@ browser.menus.create(
   } // Initalize RO storage for serialized disk buffer
   // () => localStorage.setItem("offline_tabs_ro", "")
 );
+// Set used of O(1) operations (goal: minimize injected script overhead)
 const inMemoryStorage = new Set();
 
 function sendOfflineMessage(tabId, tabTitle = "") {
@@ -21,6 +23,7 @@ function sendOfflineMessage(tabId, tabTitle = "") {
     dynamicNotiDetails["iconUrl"] = "data/svg/online.svg";
     inMemoryStorage.delete(tabId);
   } else {
+    // Tab not found in store. Add and Send according notification
     dynamicNotiDetails[
       "message"
     ] = `This tab is now offline: "${tabTitle.substring(0, 15)}..."`;
@@ -40,8 +43,10 @@ function sendOfflineMessage(tabId, tabTitle = "") {
 browser.runtime.onMessage.addListener((data) => {
   switch (data.type) {
     case "getOfflineTabs":
+      // Send store to frontend
       return Promise.resolve(inMemoryStorage);
     case "addOfflineTab":
+      // Get UI change and update store
       sendOfflineMessage(Number(data.id));
       return Promise.resolve(null);
     default:
@@ -58,9 +63,6 @@ browser.commands.onCommand.addListener((command) => {
     );
   }
 });
-// tab object (for dev)
-//  {"id":2,"index":0,"windowId":1,"highlighted":true,"active":true,"attention":false,"pinned":false,"status":"complete","hidden":false,"discarded":false,"incognito":false,"width":1918,"height":1004,"lastAccessed":1598825219744,"audible":false,"mutedInfo":{"muted":false},"isArticle":false,"isInReaderMode":false,"sharingState":{"camera":false,"microphone":false},"successorTabId":-1,"url":"about:debugging#/runtime/this-firefox","title":"Debugging - Runtime / this-firefox","favIconUrl":"chrome://browser/skin/developer.svg"} background.js:26:13
-
 function normalizeGetLocalStorage() {
   // Rather than pushing to localStorage (expensive), we will
   // push the data to localStorage only when browser is closed
@@ -68,8 +70,7 @@ function normalizeGetLocalStorage() {
   // Old localStorage code in commit 61143d4
   return inMemoryStorage;
 }
-
-browser.menus.onClicked.addListener(async function (info, tab) {
+browser.menus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId == "offline-tab") {
     sendOfflineMessage(Number(tab.id), tab.title);
     // Inject content script to monitor and prompt for going online
@@ -78,9 +79,7 @@ browser.menus.onClicked.addListener(async function (info, tab) {
     // });
   }
 });
-
 function injectConfirmGoingOnline() {}
-
 function cancelRequest(requestDetails) {
   // Block request if tab in block-list and prompt going online
   // if website is already offline and a request was detected
@@ -90,8 +89,11 @@ function cancelRequest(requestDetails) {
     return { cancel: true };
   }
 }
-
 browser.webRequest.onBeforeRequest.addListener(
+  // Main event dispatcher for request management
+  // Fires on all requests (as the extension may run
+  // on all URL's). Blocking mode enabled to compltely
+  // reject incoming & outgoing requests.
   cancelRequest,
   { urls: ["*://*/*"] },
   ["blocking"]
