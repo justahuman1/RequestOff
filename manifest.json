@@ -5,6 +5,7 @@
   "version": "0.1",
   "homepage_url": "https://www.github.com/justahuman1",
   "permissions": [
+    "commands",
     "tabs",
     "menus",
     "*://*/*",
@@ -29,9 +30,10 @@
       "toggle-requests-in-tab": {
         "suggested_key": {
           "default": "Alt+Shift+R",
-          "linux": "Alt+Shift+R"
+          "linux": "Alt+Shift+R",
+          "mac": "MacCtrl+Shift+R"
         },
-        "description": "Toggle requests for the current tab."
+        "description": "Toggle requests for the current tab"
       }
     }
 }
