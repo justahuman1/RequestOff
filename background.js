@@ -7,17 +7,43 @@ browser.menus.create(
       "16": "data/svg/icon.svg",
       "32": "data/svg/icon.svg",
     },
-  } // Initalize RO storage for offline disk buffer
+  } // Initalize RO storage for serialized disk buffer
   // () => localStorage.setItem("offline_tabs_ro", "")
 );
 const inMemoryStorage = new Set();
 
+function sendOfflineMessage(tabId, tabTitle) {
+  // Trigger to add tab to inMemoryStorage if not
+  // in set. Else, remove. Provides toggle functionality.
+  let dynamicNotiDetails = {};
+  if (inMemoryStorage.has(tabId)) {
+    dynamicNotiDetails["message"] = "This tab is now live!";
+    dynamicNotiDetails["iconUrl"] = "data/svg/online.svg";
+    inMemoryStorage.delete(tabId);
+  } else {
+    dynamicNotiDetails[
+      "message"
+    ] = `This tab is now offline: "${tabTitle.substring(0, 15)}..."`;
+    dynamicNotiDetails["iconUrl"] = "data/svg/offline.svg";
+    inMemoryStorage.add(tabId);
+  }
+  // Add to block list and send notification
+  browser.notifications.create({
+    type: "basic",
+    title: "RequestOff",
+    ...dynamicNotiDetails,
+  });
+}
+// Communicator with popup html
+browser.runtime.onMessage.addListener((data) => {
+  if (data.type === "getOfflineTabs") return Promise.resolve(inMemoryStorage);
+});
 // Shortcut commands
 browser.commands.onCommand.addListener((command) => {
   // Dispatch offline mode on current active tab
   if (command === "toggle-requests-in-tab") {
     browser.tabs.query({ currentWindow: true, active: true }).then(
-      (res) => sendOfflineMessage(res[0].id),
+      (res) => sendOfflineMessage(res[0].id, res[0].title),
       () => console.log("Shortcut Instantiation Failed")
     );
   }
@@ -33,33 +59,9 @@ function normalizeGetLocalStorage() {
   return inMemoryStorage;
 }
 
-function sendOfflineMessage(tabId) {
-  // Trigger to add tab to inMemoryStorage if not
-  // in set. Else, remove. Provides toggle functionality.
-  let dynamicNotiDetails = {};
-  if (inMemoryStorage.has(tabId)) {
-    dynamicNotiDetails["message"] = "This tab is now live!";
-    dynamicNotiDetails["iconUrl"] = "data/svg/online.svg";
-    inMemoryStorage.delete(tabId);
-  } else {
-    dynamicNotiDetails[
-      "message"
-    ] = `This tab is now offline: "${tab.title.substring(0, 15)}..."`;
-    dynamicNotiDetails["iconUrl"] = "data/svg/offline.svg";
-    inMemoryStorage.add(tabId);
-  }
-
-  // Add to block list and send notification
-  browser.notifications.create({
-    type: "basic",
-    title: "RequestOff",
-    ...dynamicNotiDetails,
-  });
-}
-
 browser.menus.onClicked.addListener(async function (info, tab) {
   if (info.menuItemId == "offline-tab") {
-    sendOfflineMessage(Number(tab.id));
+    sendOfflineMessage(Number(tab.id), tab.title);
     // Inject content script to monitor and prompt for going online
     // browser.tabs.executeScript({
     //   code: `alert("location:${}");`,
