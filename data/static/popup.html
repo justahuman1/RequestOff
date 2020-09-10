@@ -45,17 +45,42 @@
       .slider.round:before {
         border-radius: 50%;
       }
+      #body {
+        width:100%;
+        display:flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      * {
+        font-family: Gill Sans Extrabold, sans-serif;
+      }
+      td {
+  padding: 1px 10px;
+}
     </style>
   </head>
   <body>
+      <!-- #mew{ -->
+      <!--   display:flex; -->
+      <!--   align-items:center; -->
+      <!-- } -->
+      <!-- #tableContainer{ -->
+      <!--   display:flex; -->
+      <!--   flex-direction: column; -->
+      <!--   justify-content:center -->
+      <!-- } -->
     <div id="body">
-      <h1>RequestOff</h1>
-      <table id="mainTable" style="border:1px solid green">
-        <tr>
-          <th>Offline</th>
-          <th>Title</th>
-        </tr>
-      </table>
+      <div id="mew">
+        <h1>RequestOff</h1>
+      </div>
+      <div id="tableContainer">
+        <table id="mainTable">
+          <tr>
+            <th>Offline</th>
+            <th>Title</th>
+          </tr>
+        </table>
+      </div>
     </div>
     <script src="js/fillPopup.js"></script>
   </body>

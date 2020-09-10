@@ -16,16 +16,15 @@ async function traverseTabs(tabs) {
   let i = 0;
   for (let tab of tabs) {
     let row = table.insertRow(++i);
-    let cell1 = row.insertCell(0);
-    let cell2 = row.insertCell(1);
+    let cells = [row.insertCell(0), row.insertCell(1)];
     // Check if tab is in store (background message)
     if (offlineTabs.has(tab.id))
-      cell1.innerHTML = generateSlider(tab.id, "checked");
-    else cell1.innerHTML = generateSlider(tab.id);
-    cell2.innerHTML = tab.title;
-
+      cells[0].innerHTML = generateSlider(tab.id, "checked");
+    else cells[0].innerHTML = generateSlider(tab.id);
+    // Title cell (same amount of chars as default tab length)
+    cells[1].innerHTML = tab.title.substring(0, 20);
     // Add UI listener per event for corresponding tab (via global ID)
-    cell1.addEventListener("click", (event) => {
+    cells[0].addEventListener("click", (event) => {
       let uiClickedId = event.target.getAttribute("id");
       if (uiClickedId) {
         browser.runtime.sendMessage({ type: "addOfflineTab", id: uiClickedId });

@@ -23,7 +23,7 @@ function sendOfflineMessage(tabId, tabTitle = "") {
     dynamicNotiDetails["iconUrl"] = "data/svg/online.svg";
     inMemoryStorage.delete(tabId);
   } else {
-    // Tab not found in store. Add and Send according notification
+    // Tab not found in store. Add and Send corresponding noti
     dynamicNotiDetails[
       "message"
     ] = `This tab is now offline: "${tabTitle.substring(0, 15)}..."`;
@@ -83,7 +83,10 @@ function injectConfirmGoingOnline() {}
 function cancelRequest(requestDetails) {
   // Block request if tab in block-list and prompt going online
   // if website is already offline and a request was detected
-  // Issue here: Determine if request was user or server
+  // TODO: Issue - Determine if request was user or server
+  // Idea: Determine if a click occured in the tab in the previous
+  // ~1 second before request occurs. If so, we can guess it was
+  // the user, rather than the server.
   if (inMemoryStorage.has(requestDetails.tabId)) {
     injectConfirmGoingOnline();
     return { cancel: true };
