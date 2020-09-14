@@ -37,7 +37,7 @@
       "suggested_key": {
         "default": "Alt+Shift+R",
         "linux": "Alt+Shift+R",
-        "mac": "MacCtrl+Shift+R"
+        "mac": "MacCtrl+Shift+E"
       },
       "description": "Toggle requests for the current tab"
     },
