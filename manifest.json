@@ -6,7 +6,6 @@
   "description": "Unnecessary Javascript is the worst. Let's regain control of your browser!",
   "homepage_url": "https://www.github.com/justahuman1/RequestOff",
   "permissions": [
-    "commands",
     "tabs",
     "menus",
     "*://*/*",
