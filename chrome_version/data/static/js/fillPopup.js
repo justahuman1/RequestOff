@@ -11,8 +11,7 @@ async function traverseTabs(tabs) {
   const offlineTabs = await chrome.runtime.sendMessage({
     type: "getOfflineTabs",
   });
-  console.log("Poop");
-  console.log(offlineTabs);
+  console.log(`=== ${offlineTabs}`);
   // Get bare-bones table from popup.html
   const table = document.getElementById("mainTable");
   let i = 0;

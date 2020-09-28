@@ -39,8 +39,6 @@ function sendOfflineMessage(tabId, tabTitle = "") {
 chrome.runtime.onMessage.addListener((data) => {
   switch (data.type) {
     case "getOfflineTabs":
-      console.log("NMOOOOO");
-      console.log();
       // Send store to frontend
       return JSON.stringify([...inMemoryStorage]);
     // return Promise.resolve(inMemoryStorage);
