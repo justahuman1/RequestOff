@@ -7,7 +7,7 @@
   "homepage_url": "https://www.github.com/justahuman1/RequestOff",
   "permissions": [
     "tabs",
-    "menus",
+    "contextMenus",
     "*://*/*",
     "storage",
     "webRequest",
@@ -15,11 +15,11 @@
     "notifications"
   ],
   "icons": {
-    "16": "data/svg/offline.svg",
-    "32": "data/svg/offline.svg",
-    "48": "data/svg/offline.svg",
-    "64": "data/svg/offline.svg",
-    "128": "data/svg/offline.svg"
+    "16": "data/svg/offline.png",
+    "32": "data/svg/offline.png",
+    "48": "data/svg/offline.png",
+    "64": "data/svg/offline.png",
+    "128": "data/svg/offline.png"
   },
   "background": {
     "scripts": [
@@ -27,7 +27,12 @@
     ]
   },
   "browser_action": {
-    "default_icon": "data/svg/offline.svg",
+    "default_icon": {
+      "19": "data/svg/offline.png",
+      "38": "data/svg/offline.png",
+      "48": "data/svg/offline.png",
+      "128": "data/svg/offline.png"
+    },
     "default_title": "RequestOff",
     "default_popup": "data/static/popup.html"
   },
@@ -36,14 +41,15 @@
       "suggested_key": {
         "default": "Alt+Shift+R",
         "linux": "Alt+Shift+R",
-        "mac": "MacCtrl+Shift+E"
+        "mac": "Command+Shift+E"
       },
       "description": "Toggle requests for the current tab"
     },
     "_execute_browser_action": {
       "suggested_key": {
         "default": "Alt+Shift+U",
-        "linux": "Alt+Shift+U"
+        "linux": "Alt+Shift+U",
+        "mac": "Command+Shift+U"
       }
     }
   }

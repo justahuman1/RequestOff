@@ -7,7 +7,7 @@
   "homepage_url": "https://www.github.com/justahuman1/RequestOff",
   "permissions": [
     "tabs",
-    "contextMenus",
+    "menus",
     "*://*/*",
     "storage",
     "webRequest",
@@ -15,11 +15,11 @@
     "notifications"
   ],
   "icons": {
-    "16": "data/svg/offline.png",
-    "32": "data/svg/offline.png",
-    "48": "data/svg/offline.png",
-    "64": "data/svg/offline.png",
-    "128": "data/svg/offline.png"
+    "16": "data/svg/offline.svg",
+    "32": "data/svg/offline.svg",
+    "48": "data/svg/offline.svg",
+    "64": "data/svg/offline.svg",
+    "128": "data/svg/offline.svg"
   },
   "background": {
     "scripts": [

@@ -49,6 +49,10 @@ browser.runtime.onMessage.addListener((data) => {
       // Get UI change and update store
       sendOfflineMessage(Number(data.id));
       return Promise.resolve(null);
+    case "windowOffline":
+      for (id of data.ids) {
+        sendOfflineMessage(Number(id));
+      }
     default:
       return;
   }
@@ -79,7 +83,7 @@ browser.menus.onClicked.addListener(async (info, tab) => {
     // });
   }
 });
-function injectConfirmGoingOnline() {}
+// function injectConfirmGoingOnline() {}
 function cancelRequest(requestDetails) {
   // Block request if tab in block-list and prompt going online
   // if website is already offline and a request was detected
@@ -88,7 +92,7 @@ function cancelRequest(requestDetails) {
   // ~1 second before request occurs. If so, we can guess it was
   // the user, rather than the server.
   if (inMemoryStorage.has(requestDetails.tabId)) {
-    injectConfirmGoingOnline();
+    // injectConfirmGoingOnline();
     return { cancel: true };
   }
 }

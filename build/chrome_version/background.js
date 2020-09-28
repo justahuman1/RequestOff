@@ -4,8 +4,8 @@ chrome.contextMenus.create(
     id: "offline-tab",
     title: "Toggle Tab Requests",
     contexts: ["all"],
-  }, // Initalize RO storage for serialized disk buffer
-  () => localStorage.setItem("offline_tabs_ro", "")
+  } // Initalize RO storage for serialized disk buffer
+  // () => localStorage.setItem("offline_tabs_ro", "")
 );
 // Set used of O(1) operations (goal: minimize injected script overhead)
 const inMemoryStorage = new Set();
@@ -41,12 +41,12 @@ chrome.runtime.onMessage.addListener((data, _, responder) => {
     case "getOfflineTabs":
       // Send store to frontend
       responder({ data: [...inMemoryStorage] });
+      // No return value to asynchronously
+      // update background data
       return;
     case "addOfflineTab":
       // Get UI change and update store
       sendOfflineMessage(Number(data.id));
-      // No return value to asynchronously
-      // update background data
       return;
     case "windowOffline":
       for (id of data.ids) {
