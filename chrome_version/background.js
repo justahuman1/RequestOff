@@ -36,16 +36,19 @@ function sendOfflineMessage(tabId, tabTitle = "") {
   }
 }
 // // Communicator with popup html
-chrome.runtime.onMessage.addListener((data) => {
+chrome.runtime.onMessage.addListener((data, _, responder) => {
   switch (data.type) {
     case "getOfflineTabs":
       // Send store to frontend
-      return JSON.stringify([...inMemoryStorage]);
-    // return Promise.resolve(inMemoryStorage);
+      responder({ data: [...inMemoryStorage] });
     case "addOfflineTab":
       // Get UI change and update store
+      console.log("Adding tab in ext");
+      console.log(data);
+      // No return value to asynchronously
+      // update background data
       sendOfflineMessage(Number(data.id));
-      return Promise.resolve(null);
+    // return true;
     default:
       return;
   }

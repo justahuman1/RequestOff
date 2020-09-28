@@ -4,14 +4,7 @@ function generateSlider(tabId, offline) {
     <input ${offline}  type="checkbox" id="${tabId}"/>
     <div class="slider round"></div></label>`;
 }
-async function traverseTabs(tabs) {
-  // Communicator between background and UI
-  // Get current offline tabs, populate accordingly,
-  // allow for updates, and send updates back to background script
-  const offlineTabs = await chrome.runtime.sendMessage({
-    type: "getOfflineTabs",
-  });
-  console.log(`=== ${offlineTabs}`);
+function traverseTabs(tabs, offlineTabs) {
   // Get bare-bones table from popup.html
   const table = document.getElementById("mainTable");
   let i = 0;
@@ -33,11 +26,20 @@ async function traverseTabs(tabs) {
     });
   }
 }
+async function pollBackgroundData(tabs) {
+  // Communicator between background and UI
+  // Get current offline tabs, populate accordingly,
+  // allow for updates, and send updates back to background script
+  await chrome.runtime.sendMessage(
+    {
+      type: "getOfflineTabs",
+    },
+    (res) => traverseTabs(tabs, new Set(res.data))
+  );
+}
 function fillOnlineTab() {
   // Get tabs and populate UI on popup click
-  chrome.tabs.query({ currentWindow: true }, traverseTabs);
-  // .then()
-  // .catch(() => alert("Failed Window Parsing.."));
+  chrome.tabs.query({ currentWindow: true }, pollBackgroundData);
 }
 // Initalizer function for UI
 fillOnlineTab();
