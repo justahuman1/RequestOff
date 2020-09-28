@@ -60,9 +60,8 @@ chrome.runtime.onMessage.addListener((data, _, responder) => {
 chrome.commands.onCommand.addListener((command) => {
   // Dispatch offline mode on current active tab
   if (command === "toggle-requests-in-tab") {
-    chrome.tabs.query({ currentWindow: true, active: true }).then(
-      (res) => sendOfflineMessage(res[0].id, res[0].title),
-      () => console.log("Shortcut Instantiation Failed")
+    chrome.tabs.query({ currentWindow: true, active: true }, (res) =>
+      sendOfflineMessage(res[0].id, res[0].title)
     );
   }
 });

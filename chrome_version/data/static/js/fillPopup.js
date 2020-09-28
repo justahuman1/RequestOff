@@ -17,7 +17,7 @@ function traverseTabs(tabs, offlineTabs) {
   let i = 0,
     // Window option data
     allTabs = [];
-  tabs.reverse();
+  tabs.reverse(); // Easier UX for newer tabs in the top
   tabs.unshift({ id: -7781, title: "Current Window" });
   for (let tab of tabs) {
     let row = table.insertRow(++i);
