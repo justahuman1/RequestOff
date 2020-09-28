@@ -41,28 +41,31 @@ chrome.runtime.onMessage.addListener((data, _, responder) => {
     case "getOfflineTabs":
       // Send store to frontend
       responder({ data: [...inMemoryStorage] });
+      return;
     case "addOfflineTab":
       // Get UI change and update store
-      console.log("Adding tab in ext");
-      console.log(data);
+      sendOfflineMessage(Number(data.id));
       // No return value to asynchronously
       // update background data
-      sendOfflineMessage(Number(data.id));
-    // return true;
+      return;
+    case "windowOffline":
+      for (id of data.ids) {
+        sendOfflineMessage(Number(id));
+      }
     default:
       return;
   }
 });
 // // Shortcut commands
-// browser.commands.onCommand.addListener((command) => {
-//   // Dispatch offline mode on current active tab
-//   if (command === "toggle-requests-in-tab") {
-//     browser.tabs.query({ currentWindow: true, active: true }).then(
-//       (res) => sendOfflineMessage(res[0].id, res[0].title),
-//       () => console.log("Shortcut Instantiation Failed")
-//     );
-//   }
-// });
+chrome.commands.onCommand.addListener((command) => {
+  // Dispatch offline mode on current active tab
+  if (command === "toggle-requests-in-tab") {
+    chrome.tabs.query({ currentWindow: true, active: true }).then(
+      (res) => sendOfflineMessage(res[0].id, res[0].title),
+      () => console.log("Shortcut Instantiation Failed")
+    );
+  }
+});
 function normalizeGetLocalStorage() {
   // Rather than pushing to localStorage (expensive), we will
   // push the data to localStorage only when browser is closed

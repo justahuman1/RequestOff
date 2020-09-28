@@ -4,10 +4,21 @@ function generateSlider(tabId, offline) {
     <input ${offline}  type="checkbox" id="${tabId}"/>
     <div class="slider round"></div></label>`;
 }
+function toggleAllUI() {
+  const sliders = [].slice.call(
+    document.querySelectorAll("#mainTable input"),
+    1
+  );
+  for (let slider of sliders) slider.checked = !slider.checked;
+}
 function traverseTabs(tabs, offlineTabs) {
   // Get bare-bones table from popup.html
   const table = document.getElementById("mainTable");
-  let i = 0;
+  let i = 0,
+    // Window option data
+    allTabs = [];
+  tabs.reverse();
+  tabs.unshift({ id: -7781, title: "Current Window" });
   for (let tab of tabs) {
     let row = table.insertRow(++i);
     let cells = [row.insertCell(0), row.insertCell(1)];
@@ -17,11 +28,16 @@ function traverseTabs(tabs, offlineTabs) {
     else cells[0].innerHTML = generateSlider(tab.id);
     // Title cell (same amount of chars as default tab length)
     cells[1].innerHTML = tab.title.substring(0, 20);
+    allTabs.push(tab.id);
     // Add UI listener per event for corresponding tab (via global ID)
     cells[0].addEventListener("click", (event) => {
-      let uiClickedId = event.target.getAttribute("id");
-      if (uiClickedId) {
-        browser.runtime.sendMessage({ type: "addOfflineTab", id: uiClickedId });
+      const uiClickedId = event.target.getAttribute("id");
+      if (uiClickedId == -7781) {
+        // Send async message and update UI for all toggles
+        chrome.runtime.sendMessage({ type: "windowOffline", ids: allTabs });
+        toggleAllUI();
+      } else if (uiClickedId) {
+        chrome.runtime.sendMessage({ type: "addOfflineTab", id: uiClickedId });
       }
     });
   }
