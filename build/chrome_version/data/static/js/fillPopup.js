@@ -11,14 +11,24 @@ function toggleAllUI() {
   );
   for (let slider of sliders) slider.checked = !slider.checked;
 }
-function traverseTabs(tabs, offlineTabs) {
+async function getWindow() {
+  let p = new Promise(function (resolve, _) {
+    chrome.windows.getCurrent(function (d) {
+      resolve(d);
+    });
+  });
+  return await p;
+}
+async function traverseTabs(tabs, offlineTabs) {
   // Get bare-bones table from popup.html
   const table = document.getElementById("mainTable");
+  const win = await getWindow();
+  const uniqWin = -7781 + win.id;
   let i = 0,
     // Window option data
     allTabs = [];
   tabs.reverse(); // Easier UX for newer tabs in the top
-  tabs.unshift({ id: -7781, title: "Current Window" });
+  tabs.unshift({ id: uniqWin, title: "Current Window" });
   for (let tab of tabs) {
     let row = table.insertRow(++i);
     let cells = [row.insertCell(0), row.insertCell(1)];
@@ -32,7 +42,7 @@ function traverseTabs(tabs, offlineTabs) {
     // Add UI listener per event for corresponding tab (via global ID)
     cells[0].addEventListener("click", (event) => {
       const uiClickedId = event.target.getAttribute("id");
-      if (uiClickedId == -7781) {
+      if (uiClickedId == uniqWin) {
         // Send async message and update UI for all toggles
         chrome.runtime.sendMessage({ type: "windowOffline", ids: allTabs });
         toggleAllUI();
