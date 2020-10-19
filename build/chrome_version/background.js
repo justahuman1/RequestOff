@@ -49,7 +49,7 @@ chrome.runtime.onMessage.addListener((data, _, responder) => {
       sendOfflineMessage(Number(data.id));
       return;
     case "windowOffline":
-      for (id of data.ids) {
+      for (let id of data.ids) {
         sendOfflineMessage(Number(id));
       }
     default:

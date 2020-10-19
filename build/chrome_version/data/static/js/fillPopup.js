@@ -12,12 +12,9 @@ function toggleAllUI() {
   for (let slider of sliders) slider.checked = !slider.checked;
 }
 async function getWindow() {
-  let p = new Promise(function (resolve, _) {
-    chrome.windows.getCurrent(function (d) {
-      resolve(d);
-    });
+  return await new Promise((resolve, _) => {
+    chrome.windows.getCurrent((d) => resolve(d));
   });
-  return await p;
 }
 async function traverseTabs(tabs, offlineTabs) {
   // Get bare-bones table from popup.html

@@ -50,7 +50,7 @@ browser.runtime.onMessage.addListener((data) => {
       sendOfflineMessage(Number(data.id));
       return Promise.resolve(null);
     case "windowOffline":
-      for (id of data.ids) {
+      for (let id of data.ids) {
         sendOfflineMessage(Number(id));
       }
     default:
