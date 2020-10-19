@@ -18,13 +18,15 @@ async function traverseTabs(tabs) {
   const offlineTabs = await browser.runtime.sendMessage({
     type: "getOfflineTabs",
   });
+  const win = await browser.windows.getCurrent();
+  const uniqWin = -7781 + win.id;
   // Get bare-bones table from popup.html
   const table = document.getElementById("mainTable");
   let i = 0,
     // Window option data
     allTabs = [];
   tabs.reverse(); // Easier UX for newer tabs in the top
-  tabs.unshift({ id: -7781, title: "Current Window" });
+  tabs.unshift({ id: uniqWin, title: "Current Window" });
   for (let tab of tabs) {
     let row = table.insertRow(++i);
     let cells = [row.insertCell(0), row.insertCell(1)];
@@ -38,7 +40,7 @@ async function traverseTabs(tabs) {
     // Add UI listener per event for corresponding tab (via global ID)
     cells[0].addEventListener("click", (event) => {
       let uiClickedId = event.target.getAttribute("id");
-      if (uiClickedId == -7781) {
+      if (uiClickedId == uniqWin) {
         // Send async message and update UI for all toggles
         browser.runtime.sendMessage({ type: "windowOffline", ids: allTabs });
         toggleAllUI();
