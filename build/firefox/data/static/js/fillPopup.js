@@ -1,4 +1,5 @@
 let trs,
+  vimState = "",
   uniqWin,
   // Pointer to window cell element
   curWinCell,
@@ -23,20 +24,30 @@ function attachVimShortcuts(e) {
   // add the pointer to the next/prev row
   let curPointer = document.getElementById("pointer");
   let curRow = Number(curPointer.getAttribute("data"));
+  let tabId;
   switch (e.key) {
     // move pointer down
     case "j":
       curPointer.remove();
-      trs[++curRow].children[0].innerHTML = generatePointer(curRow);
+      curRow += vimState == "" ? 1 : Number(vimState);
+      let potentialJump = trs.length - 1;
+      trs[
+        curRow > potentialJump ? potentialJump : curRow
+      ].children[0].innerHTML = generatePointer(curRow);
+      vimState = "";
       break;
     // move pointer up
     case "k":
       curPointer.remove();
-      trs[--curRow].children[0].innerHTML = generatePointer(curRow);
+      curRow -= vimState == "" ? 1 : Number(vimState);
+      trs[curRow <= 0 ? 1 : curRow].children[0].innerHTML = generatePointer(
+        curRow
+      );
+      vimState = "";
       break;
     // trigger offline toggle
     case "n":
-      let tabId = trs[curRow].children[1].children[0].getAttribute("for");
+      tabId = trs[curRow].children[1].children[0].getAttribute("for");
       // Update internal & backend state
       if (tabId == uniqWin) {
         tabState = handleWindowButton(allTabs, tabState);
@@ -49,6 +60,31 @@ function attachVimShortcuts(e) {
         tabId,
         Object.keys(tabState[0]).includes(tabId) ? null : "checked"
       );
+      break;
+    case "e":
+      window.close();
+      break;
+    case "g":
+      curPointer.remove();
+      curRow = 1;
+      trs[curRow].children[0].innerHTML = generatePointer(curRow);
+      vimState = "";
+      break;
+    case "G":
+      curPointer.remove();
+      curRow = trs.length - 1;
+      trs[curRow].children[0].innerHTML = generatePointer(curRow);
+      vimState = "";
+      break;
+    case "t":
+      tabId = trs[curRow].children[1].children[0].getAttribute("for");
+      browser.tabs.update(Number(tabId), { active: true });
+      window.close();
+      break;
+    default:
+      if (!isNaN(e.key)) {
+        vimState += e.key;
+      }
       break;
   }
 }
