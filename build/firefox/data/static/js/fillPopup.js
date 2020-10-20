@@ -1,8 +1,56 @@
+let trs,
+  uniqWin,
+  // Pointer to window cell element
+  curWinCell,
+  // Window option data
+  allTabs = new Set(),
+  // [OnlineTabs, OfflineTabs]
+  tabState = [{}, {}];
+
 function generateSlider(tabId, offline) {
   // Dynamic Slider element
   return `<label class="switch" for="${tabId}">
     <input ${offline}  type="checkbox" id="${tabId}"/>
     <div class="slider round"></div></label>`;
+}
+function generatePointer(data) {
+  return `<p id="pointer" data="${data}" style="margin:0px;">➡️</p>`;
+}
+function attachVimShortcuts(e) {
+  // Supports Vim mode for UI
+  // Get the data number
+  // ++/--data
+  // add the pointer to the next/prev row
+  let curPointer = document.getElementById("pointer");
+  let curRow = Number(curPointer.getAttribute("data"));
+  switch (e.key) {
+    // move pointer down
+    case "j":
+      curPointer.remove();
+      trs[++curRow].children[0].innerHTML = generatePointer(curRow);
+      break;
+    // move pointer up
+    case "k":
+      curPointer.remove();
+      trs[--curRow].children[0].innerHTML = generatePointer(curRow);
+      break;
+    // trigger offline toggle
+    case "n":
+      let tabId = trs[curRow].children[1].children[0].getAttribute("for");
+      // Update internal & backend state
+      if (tabId == uniqWin) {
+        tabState = handleWindowButton(allTabs, tabState);
+      } else {
+        tabState = handleTabButton(allTabs, tabState, tabId);
+      }
+      // Update current key state (programatically
+      // since key's do not trigger touch events)
+      trs[curRow].children[1].innerHTML = generateSlider(
+        tabId,
+        Object.keys(tabState[0]).includes(tabId) ? null : "checked"
+      );
+      break;
+  }
 }
 function swapState(state, offline = false, id) {
   const loc = offline ? 1 : 0;
@@ -24,43 +72,45 @@ async function traverseTabs(tabs) {
   // Communicator between background and UI
   // Get current offline tabs, populate accordingly,
   // allow for updates, and send updates back to background script
+  document.addEventListener("keypress", attachVimShortcuts);
   const offlineTabs = await browser.runtime.sendMessage({
     type: "getOfflineTabs",
   });
+  trs = document.getElementsByTagName("tr");
   const win = await browser.windows.getCurrent();
-  const uniqWin = -7781 + win.id;
+  uniqWin = -7781 + win.id;
   // Get bare-bones table from popup.html
   const table = document.getElementById("mainTable");
-  let i = 0,
-    curWinCell,
-    // [OnlineTabs, OfflineTabs]
-    tabState = [{}, {}],
-    // Window option data
-    allTabs = new Set();
+  let i = 0;
   tabs.reverse(); // Easier UX for newer tabs in the top
   tabs.unshift({ id: uniqWin, title: "Current Window" });
   for (let tab of tabs) {
     let row = table.insertRow(++i);
-    let cells = [row.insertCell(0), row.insertCell(1)];
+    let cells = [row.insertCell(0), row.insertCell(1), row.insertCell(2)];
     let online;
-    if (i == 1) curWinCell = cells[0];
+    if (i == 1) {
+      curWinCell = cells[1];
+      cells[0].innerHTML = `<p id="pointer" data="${row.rowIndex}" style="margin:0px;">➡️</p>`;
+    }
+    // cells[0].innerHTML = `<p id="pointer${row.rowIndex}" style="margin:0px;"></p>`;
+
     // Check if tab is in store (background message)
     if (offlineTabs.has(tab.id)) {
       online = 1;
-      cells[0].innerHTML = generateSlider(tab.id, "checked");
+      cells[1].innerHTML = generateSlider(tab.id, "checked");
     } else {
       online = 0;
-      cells[0].innerHTML = generateSlider(tab.id);
+      cells[1].innerHTML = generateSlider(tab.id);
     }
     tabState[online][tab.id] = {
-      element: cells[0],
+      element: cells[1],
       checked: online == 0 ? true : false,
     };
     allTabs.add(tab.id);
     // Title cell (same amount of chars as default tab length)
-    cells[1].innerHTML = tab.title.substring(0, 20);
+    cells[2].innerHTML = tab.title.substring(0, 20);
     // Add UI listener per event for corresponding tab (via global ID)
-    cells[0].addEventListener("click", (event) => {
+    cells[1].addEventListener("click", (event) => {
       let uiClickedId = Number(event.target.getAttribute("id"));
       // Send async message for event toggling
       if (uiClickedId == uniqWin) {
@@ -68,13 +118,7 @@ async function traverseTabs(tabs) {
         tabState = handleWindowButton(allTabs, tabState);
       } else if (uiClickedId) {
         // Individual Tab button
-        tabState = handleTabButton(
-          allTabs,
-          tabState,
-          uiClickedId,
-          uniqWin,
-          curWinCell
-        );
+        tabState = handleTabButton(allTabs, tabState, uiClickedId);
       }
     });
   }
@@ -91,7 +135,7 @@ async function traverseTabs(tabs) {
     }
   }
 }
-function handleTabButton(allTabs, tabState, uiClickedId, uniqWin, curWinCell) {
+function handleTabButton(allTabs, tabState, uiClickedId) {
   // 1. Change App state
   // 2. Change backend inMemoryStorage state
   // 3. Change frontend button state
