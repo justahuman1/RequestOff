@@ -15,7 +15,7 @@ function generateSlider(tabId, offline) {
     <div class="slider round"></div></label>`;
 }
 function generatePointer(data) {
-  return `<p id="pointer" data="${data}" style="margin:0px;">➡️</p>`;
+  return `<p id="pointer" data="${data}">➠ </p>`;
 }
 function attachVimShortcuts(e) {
   // Supports Vim mode for UI
@@ -75,6 +75,7 @@ function attachVimShortcuts(e) {
       curRow = trs.length - 1;
       trs[curRow].children[0].innerHTML = generatePointer(curRow);
       vimState = "";
+      window.scrollTo(0, document.body.scrollHeight);
       break;
     case "t":
       tabId = trs[curRow].children[1].children[0].getAttribute("for");
@@ -112,6 +113,8 @@ async function traverseTabs(tabs) {
   const offlineTabs = await browser.runtime.sendMessage({
     type: "getOfflineTabs",
   });
+  const curTabId = (await browser.tabs.query({ active: true }))[0].id;
+
   trs = document.getElementsByTagName("tr");
   const win = await browser.windows.getCurrent();
   uniqWin = -7781 + win.id;
@@ -126,10 +129,9 @@ async function traverseTabs(tabs) {
     let online;
     if (i == 1) {
       curWinCell = cells[1];
-      cells[0].innerHTML = `<p id="pointer" data="${row.rowIndex}" style="margin:0px;">➡️</p>`;
-    }
-    // cells[0].innerHTML = `<p id="pointer${row.rowIndex}" style="margin:0px;"></p>`;
-
+    } else if (tab.id == curTabId)
+      // Add arrow pointer to current tab
+      cells[0].innerHTML = generatePointer(row.rowIndex);
     // Check if tab is in store (background message)
     if (offlineTabs.has(tab.id)) {
       online = 1;

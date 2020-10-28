@@ -13,14 +13,20 @@ browser.menus.create(
 );
 // Set used of O(1) operations (goal: minimize injected script overhead)
 const inMemoryStorage = new Set();
-
+function alertFrontState(offline) {
+  return offline
+    ? `document.title = '📵 ' + document.title`
+    : `document.title = document.title.substring(2)`;
+}
 function sendOfflineMessage(tabId, tabTitle = "") {
   // Trigger to add tab to inMemoryStorage if not
   // in set. Else, remove. Provides toggle functionality.
   let dynamicNotiDetails = {};
+  let offline;
   if (inMemoryStorage.has(tabId)) {
     dynamicNotiDetails["message"] = "This tab is now live!";
     dynamicNotiDetails["iconUrl"] = "data/svg/online.svg";
+    offline = false;
     inMemoryStorage.delete(tabId);
   } else {
     // Tab not found in store. Add and Send corresponding noti
@@ -28,15 +34,19 @@ function sendOfflineMessage(tabId, tabTitle = "") {
       "message"
     ] = `This tab is now offline: "${tabTitle.substring(0, 15)}..."`;
     dynamicNotiDetails["iconUrl"] = "data/svg/offline.svg";
+    offline = true;
     inMemoryStorage.add(tabId);
   }
   // Add to block list and send notification
   if (tabTitle) {
-    browser.notifications.create({
-      type: "basic",
-      title: "RequestOff",
-      ...dynamicNotiDetails,
+    browser.tabs.executeScript({
+      code: alertFrontState(offline),
     });
+    // browser.notifications.create({
+    //   type: "basic",
+    //   title: "RequestOff",
+    //   ...dynamicNotiDetails,
+    // });
   }
 }
 // Communicator with popup html

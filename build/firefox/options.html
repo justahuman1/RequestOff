@@ -2,11 +2,83 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>RequestOff Options</title>
+  <title>RequestOff</title>
   <meta name="description" content="settings">
   <meta name="author" content="justahuman1">
+  <style>
+    body {
+      background-color: white;
+    }
+    h1 {
+      text-align: center;
+    }
+    header {
+      font: 20px "DejaVu Sans", "Arial", sans-serif;
+      font-weight: normal;
+      border-bottom: 1px solid #eee;
+      padding: 20px 0 15px 30px;
+      color: #303942
+    }
+    .setting {
+      margin: 20px;
+    }
+    .option {
+      padding-right: 10px;
+    }
+  </style>
 </head>
 <body>
-  <h1>RequestOff Settings</h1>
+  <div>
+    <header style="text-align:center">RequestOff Options</header>
+  </div>
+  <div style="display:flex">
+    <div style="flex-direction:column">
+      <div class="pads">
+        <header style="font-size:16px">UI Shortcuts</header>
+      </div>
+      <table class="setting">
+        <tr>
+          <th>Action</th>
+          <th>Shortcut</th>
+        </tr>
+        <tr>
+          <td class="option">Move Up:</td>
+          <td><input placeholder="k"></input></td>
+        </tr>
+        <tr>
+          <td class="option">Move Down:</td>
+          <td><input placeholder="j"></input></td>
+        </tr>
+        <tr>
+          <td class="option">Home:</td>
+          <td><input placeholder="g"></input></td>
+        </tr>
+        <tr>
+          <td class="option">End:</td>
+          <td><input placeholder="G"></input></td>
+        </tr>
+        <tr>
+          <td class="option">Toggle Mode:</td>
+          <td><input placeholder="n"></input></td>
+        </tr>
+        <tr>
+          <td class="option">Go to Tab:</td>
+          <td><input placeholder="t"></input></td>
+        </tr>
+        <tr>
+          <td class="option">Close Popup:</td>
+          <td><input placeholder="e"></input></td>
+        </tr>
+      </table>
+      <!-- <div class="setting" style="display:flex;flex-direction:row"> -->
+      <!--   <p class="option">Move Up: </p> -->
+      <!--   <input placeholder="k"> -->
+      <!-- </div> -->
+      <!-- <div class="setting" style="display:flex;flex-direction:row"> -->
+      <!--   <p class="option">Move Down: </p> -->
+      <!--   <input placeholder="j"> -->
+      <!-- </div> -->
+    </div>
+  </div>
 </body>
 </html>
