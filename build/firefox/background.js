@@ -55,7 +55,7 @@ browser.runtime.onMessage.addListener((data) => {
     case "getOfflineTabs":
       // Send store to frontend
       return Promise.resolve(inMemoryStorage);
-    case "addOfflineTab":
+    case "toggleOfflineTab":
       // Get UI change and update store
       sendOfflineMessage(Number(data.id));
       return Promise.resolve(null);

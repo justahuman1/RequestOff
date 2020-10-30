@@ -6,24 +6,29 @@
 
 ## Todos
 
+- Add a timer filtering mode
 - Domain Filtering
 - Aggressive Block Mode (Auto turn off requests and turn on during user interaction)
 - Add a disk buffer in Local Storage
 - Add a serialization method for LS -> in-memory
-- Add a timer filtering mode
-- Consider seperate settings menu (less clutter in UI)
 
 ### Minor Todos
 
 - Add Settings page
-- Add auto scroll methods for vim-mode
-- Fix out of bounds arrow error
+- Add a background thread to purge old off-line tabs that are no longer existent
 
 ## Completed
 
-## 0.2.0
+### 0.2.0
 
-- Add UI menu popup shortcut
+#### Added Features
+
+- Add UI menu popup
 - Add vim-mode
-- Optimize onBeforeRequest to minimize overhead (Array => Set)
+- Add auto scroll methods for vim-mode
 - Window Filtering (via UI & shortcut)
+
+#### Fixed Bugs
+
+- Optimize onBeforeRequest to minimize overhead (Array => Set)
+- Fix out of bounds vim arrow error
