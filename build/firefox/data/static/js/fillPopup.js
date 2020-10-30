@@ -50,19 +50,28 @@ function attachVimShortcuts(e) {
       vimState = "";
       break;
     case "n": // trigger offline toggle
-      tabId = trs[curRow].children[1].children[0].getAttribute("for");
-      // Update internal & backend state
-      if (tabId == uniqWin) {
-        tabState = handleWindowButton(allTabs, tabState);
-      } else {
-        tabState = handleTabButton(allTabs, tabState, tabId);
+      let tempRow = vimState == "" ? 1 : Number(vimState);
+      let i = 0;
+      while (curRow + i < trs.length && tempRow > 0) {
+        // TODO: Consider window and tab combination error here
+        let mew = curRow + i;
+        tabId = trs[mew].children[1].children[0].getAttribute("for");
+        // Update internal & backend state
+        if (tabId == uniqWin) {
+          tabState = handleWindowButton(allTabs, tabState);
+        } else {
+          tabState = handleTabButton(allTabs, tabState, tabId);
+        }
+        // Update current key state (programatically
+        // since key's do not trigger touch events)
+        trs[mew].children[1].innerHTML = generateSlider(
+          tabId,
+          Object.keys(tabState[0]).includes(tabId) ? null : "checked"
+        );
+        tempRow--;
+        i++;
       }
-      // Update current key state (programatically
-      // since key's do not trigger touch events)
-      trs[curRow].children[1].innerHTML = generateSlider(
-        tabId,
-        Object.keys(tabState[0]).includes(tabId) ? null : "checked"
-      );
+      vimState = "";
       break;
     case "e": // Escape
       window.close();
@@ -111,8 +120,12 @@ function toggleAllUI(onlineTabs) {
   }
 }
 function stateTransaction(tabState, curWinCell, checked = false) {
+  // 1. Change App state
+  // 2. Change backend inMemoryStorage state
+  // 3. Change frontend button state
+  // 4. Check for additional element changes (rerun 1-4)
   curWinCell.innerHTML = generateSlider(uniqWin, checked ? "checked" : null);
-  tabState = swapState(tabState, true, uniqWin);
+  tabState = swapState(tabState, checked, uniqWin);
   browser.runtime.sendMessage({ type: "toggleOfflineTab", id: uniqWin });
   return tabState;
 }
@@ -164,16 +177,10 @@ async function traverseTabs(tabs) {
   }
   if (unseen && uniqWin in tabState[1]) {
     // Make it unchecked
-    tabState = stateTransaction(tabState, curWinCell);
-    // curWinCell.innerHTML = generateSlider(uniqWin);
-    // tabState = swapState(tabState, true, uniqWin);
-    // browser.runtime.sendMessage({ type: "toggleOfflineTab", id: uniqWin });
+    tabState = stateTransaction(tabState, curWinCell, false);
   } else if (!unseen && uniqWin in tabState[0]) {
     // Make it checked
     tabState = stateTransaction(tabState, curWinCell, true);
-    // curWinCell.innerHTML = generateSlider(uniqWin, "checked");
-    // tabState = swapState(tabState, true, uniqWin);
-    // browser.runtime.sendMessage({ type: "toggleOfflineTab", id: uniqWin });
   }
 }
 function buttonClickListener(event, uniqWin) {
@@ -188,28 +195,17 @@ function buttonClickListener(event, uniqWin) {
   }
 }
 function handleTabButton(allTabs, tabState, uiClickedId) {
-  // 1. Change App state
-  // 2. Change backend inMemoryStorage state
-  // 3. Change frontend button state
-  // 4. Check for additional element changes (rerun 1-4)
   if (uiClickedId in tabState[0]) {
     // Requests Online => Off
     tabState = swapState(tabState, true, uiClickedId);
     if (Object.keys(tabState[1]).length == allTabs.size - 1) {
       tabState = stateTransaction(tabState, curWinCell, true);
-      // curWinCell.innerHTML = generateSlider(uniqWin, "checked");
-      // tabState = swapState(tabState, true, uniqWin);
-      // browser.runtime.sendMessage({ type: "toggleOfflineTab", id: uniqWin });
     }
   } else {
     // Requests Offline => On
-    tabState[0][uiClickedId] = tabState[1][uiClickedId];
-    delete tabState[1][uiClickedId];
-    if (Object.keys(tabState[0]).length == 1) {
-      tabState = stateTransaction(tabState, curWinCell);
-      // curWinCell.innerHTML = generateSlider(uniqWin);
-      // tabState = swapState(tabState, false, uniqWin);
-      // browser.runtime.sendMessage({ type: "toggleOfflineTab", id: uniqWin });
+    tabState = swapState(tabState, false, uiClickedId);
+    if (Object.keys(tabState[0]).length - 1 == 0) {
+      tabState = stateTransaction(tabState, curWinCell, false);
     }
     curWinCell.innerHTML = generateSlider(uniqWin);
   }
@@ -228,18 +224,15 @@ function handleWindowButton(allTabs, tabState) {
     // Requests Offline => On
     tabState = [{ ...tabState[0], ...tabState[1] }, {}];
     windowMessenger(allTabs);
-    // toggleAllUI(allTabs);
   } else if (Object.keys(tabState[0]).length == allTabs.size) {
     // Requests Online => Off
     tabState = [{}, { ...tabState[0], ...tabState[1] }];
     windowMessenger(allTabs);
-    // toggleAllUI(allTabs);
   } else {
     // `x` online tabs and `y` offline tabs
     // Turns `x` online tabs to offline
     let curOnlineTabs = new Set(Object.keys(tabState[0]).map((i) => Number(i)));
     windowMessenger(curOnlineTabs);
-    // toggleAllUI(curOnlineTabs);
     tabState = [{}, { ...tabState[0], ...tabState[1] }];
   }
   return tabState;

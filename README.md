@@ -32,3 +32,4 @@
 
 - Optimize onBeforeRequest to minimize overhead (Array => Set)
 - Fix out of bounds vim arrow error
+- Fix Tab Sync Error
