@@ -28,7 +28,7 @@
     ]
   },
   "options_ui": {
-    "page": "options.html",
+    "page": "data/optionsStore/options.html",
     "open_in_tab":true,
     "browser_style":true
   },

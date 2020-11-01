@@ -8,7 +8,11 @@ browser.menus.create(
       "16": "data/svg/icon.svg",
       "32": "data/svg/icon.svg",
     },
-  } // Initalize RO storage for serialized disk buffer
+  }, // Initalize RO storage for serialized disk buffer
+  () =>
+    browser.storage.local.set({
+      movements: ["k", "j", "g", "G", "n", "t", "e", "x", "s"],
+    }) // Set initial shortcut keys
   // () => localStorage.setItem("offline_tabs_ro", "")
 );
 // Set used of O(1) operations (goal: minimize injected script overhead)
@@ -40,6 +44,7 @@ function sendOfflineMessage(tabId, tabTitle = "") {
   // Add to block list and send notification
   if (tabTitle) {
     browser.tabs.executeScript({
+      tabId,
       code: alertFrontState(offline),
     });
     // browser.notifications.create({

@@ -17,10 +17,9 @@ function generateSlider(tabId, offline) {
 function generatePointer(data) {
   return `<p id="pointer" data="${data}">➠</p>`;
 }
-function attachVimShortcuts(e) {
+function attachVimShortcuts(e, shortcuts) {
   // Supports Vim mode for UI
-  // Get the data number
-  // ++/--data
+  // Get the data number -> ++/--data
   // add the pointer to the next/prev row
   let curPointer = document.getElementById("pointer");
   let curRow = Number(curPointer.getAttribute("data"));
@@ -28,7 +27,17 @@ function attachVimShortcuts(e) {
   let tabId;
   window.scrollTo(0, jumpCellHeight * curRow);
   switch (e.key) {
-    case "j": // move pointer down
+    case shortcuts[0]: // Arrow Up
+      curPointer.remove();
+      curRow -= vimState == "" ? 1 : Number(vimState);
+      if (curRow < 1) curRow = 1;
+      trs[curRow <= 0 ? 1 : curRow].children[0].innerHTML = generatePointer(
+        curRow
+      );
+      window.scrollTo(0, jumpCellHeight * curRow);
+      vimState = "";
+      break;
+    case shortcuts[1]: // Arrow Down
       curPointer.remove();
       curRow += vimState == "" ? 1 : Number(vimState);
       if (curRow >= trs.length) curRow = trs.length - 1;
@@ -39,17 +48,7 @@ function attachVimShortcuts(e) {
       window.scrollTo(0, jumpCellHeight * curRow);
       vimState = "";
       break;
-    case "k": // move pointer up
-      curPointer.remove();
-      curRow -= vimState == "" ? 1 : Number(vimState);
-      if (curRow < 1) curRow = 1;
-      trs[curRow <= 0 ? 1 : curRow].children[0].innerHTML = generatePointer(
-        curRow
-      );
-      window.scrollTo(0, jumpCellHeight * curRow);
-      vimState = "";
-      break;
-    case "n": // trigger offline toggle
+    case shortcuts[2]: // Toggle mode
       let tempRow = vimState == "" ? 1 : Number(vimState);
       let i = 0;
       while (curRow + i < trs.length && tempRow > 0) {
@@ -73,28 +72,35 @@ function attachVimShortcuts(e) {
       }
       vimState = "";
       break;
-    case "e": // Escape
-      window.close();
-      break;
-    case "g": // Go to top
+    case shortcuts[3]: // Home
       curPointer.remove();
       curRow = 1;
       trs[curRow].children[0].innerHTML = generatePointer(curRow);
       vimState = "";
       window.scrollTo(0, 0);
       break;
-    case "G": // Go to bottom
+    case shortcuts[4]: // End
       curPointer.remove();
       curRow = trs.length - 1;
       trs[curRow].children[0].innerHTML = generatePointer(curRow);
       vimState = "";
       window.scrollTo(0, document.body.scrollHeight);
       break;
-    case "t": // Go to chosen tab
+    case shortcuts[5]: // Go to Tab
       tabId = trs[curRow].children[1].children[0].getAttribute("for");
       browser.tabs.update(Number(tabId), { active: true });
       window.close();
       break;
+    case shortcuts[6]: // Close Popup
+      window.close();
+      break;
+    // case "x": // Close Tab
+    // Get tab id of current row
+    // Delete row from table frontend
+    // browser.tabs.remove(tabId: int)
+    case shortcuts[8]: // Open global settings
+      browser.tabs.create({ url: "../optionsStore/options.html" });
+      window.close();
     default:
       // Add to vim state
       if (!isNaN(e.key)) {
@@ -133,7 +139,11 @@ async function traverseTabs(tabs) {
   // Communicator between background and UI
   // Get current offline tabs, populate accordingly,
   // allow for updates, and send updates back to background script
-  document.addEventListener("keypress", attachVimShortcuts);
+
+  let movements = (await browser.storage.local.get("movements")).movements;
+  document.addEventListener("keypress", (e) =>
+    attachVimShortcuts(e, movements)
+  );
   const offlineTabs = await browser.runtime.sendMessage({
     type: "getOfflineTabs",
   });

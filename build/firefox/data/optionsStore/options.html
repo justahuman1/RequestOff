@@ -5,6 +5,7 @@
   <title>RequestOff</title>
   <meta name="description" content="settings">
   <meta name="author" content="justahuman1">
+  <script src="./data/optionsStore/index.js"></script>
   <style>
     body {
       background-color: white;
@@ -25,6 +26,9 @@
     .option {
       padding-right: 10px;
     }
+    .buttonRight {
+      margin:15px 25%
+    }
   </style>
 </head>
 <body>
@@ -36,18 +40,22 @@
       <div class="pads">
         <header style="font-size:16px">UI Shortcuts</header>
       </div>
-      <table class="setting">
+      <table class="setting" id="movements">
         <tr>
           <th>Action</th>
           <th>Shortcut</th>
         </tr>
         <tr>
-          <td class="option">Move Up:</td>
+          <td class="option">Arrow Up:</td>
           <td><input placeholder="k"></input></td>
         </tr>
         <tr>
-          <td class="option">Move Down:</td>
+          <td class="option">Arrow Down:</td>
           <td><input placeholder="j"></input></td>
+        </tr>
+        <tr>
+          <td class="option">Toggle Mode:</td>
+          <td><input placeholder="n"></input></td>
         </tr>
         <tr>
           <td class="option">Home:</td>
@@ -58,10 +66,6 @@
           <td><input placeholder="G"></input></td>
         </tr>
         <tr>
-          <td class="option">Toggle Mode:</td>
-          <td><input placeholder="n"></input></td>
-        </tr>
-        <tr>
           <td class="option">Go to Tab:</td>
           <td><input placeholder="t"></input></td>
         </tr>
@@ -69,6 +73,19 @@
           <td class="option">Close Popup:</td>
           <td><input placeholder="e"></input></td>
         </tr>
+        <tr>
+          <td class="option">Close Arrow Tab:</td>
+          <td><input placeholder="x"></input></td>
+        </tr>
+        <tr>
+          <td class="option">Open Settings:</td>
+          <td><input placeholder="s"></input></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><button id="saveMovements" class="buttonRight">Save</button></td>
+        </tr>
+
       </table>
       <!-- <div class="setting" style="display:flex;flex-direction:row"> -->
       <!--   <p class="option">Move Up: </p> -->
