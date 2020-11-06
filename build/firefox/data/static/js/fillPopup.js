@@ -17,7 +17,7 @@ function generateSlider(tabId, offline) {
 function generatePointer(data) {
   return `<p id="pointer" data="${data}">➠</p>`;
 }
-function attachVimShortcuts(e, shortcuts) {
+function attachVimShortcuts(e, shortcuts, table) {
   // Supports Vim mode for UI
   // Get the data number -> ++/--data
   // add the pointer to the next/prev row
@@ -94,13 +94,24 @@ function attachVimShortcuts(e, shortcuts) {
     case shortcuts[6]: // Close Popup
       window.close();
       break;
-    // case "x": // Close Tab
-    // Get tab id of current row
-    // Delete row from table frontend
-    // browser.tabs.remove(tabId: int)
+    case shortcuts[7]: // Close Tab
+      // Add while loop to delete vimState amount of tabs
+      tabId = trs[curRow].children[1].children[0].getAttribute("for");
+      curPointer.remove();
+      table.deleteRow(curRow);
+      curRow += vimState == "" ? 1 : Number(vimState);
+      if (curRow >= trs.length) curRow = trs.length - 1;
+      trs[
+        curRow > trs.length - 1 ? trs.length - 1 : curRow
+      ].children[0].innerHTML = generatePointer(curRow);
+      browser.tabs.remove(Number(tabId));
+      window.scrollTo(0, jumpCellHeight * curRow);
+      vimState = "";
+      break;
     case shortcuts[8]: // Open global settings
       browser.tabs.create({ url: "../optionsStore/options.html" });
       window.close();
+      break;
     default:
       // Add to vim state
       if (!isNaN(e.key)) {
@@ -141,8 +152,9 @@ async function traverseTabs(tabs) {
   // allow for updates, and send updates back to background script
 
   let movements = (await browser.storage.local.get("movements")).movements;
+  const table = document.getElementById("mainTable");
   document.addEventListener("keypress", (e) =>
-    attachVimShortcuts(e, movements)
+    attachVimShortcuts(e, movements, table)
   );
   const offlineTabs = await browser.runtime.sendMessage({
     type: "getOfflineTabs",
@@ -152,7 +164,6 @@ async function traverseTabs(tabs) {
   const win = await browser.windows.getCurrent();
   uniqWin = -7781 + win.id;
   // Get bare-bones table from popup.html
-  const table = document.getElementById("mainTable");
   let i = 0,
     unseen = false;
   tabs.reverse(); // Easier UX for newer tabs in the top

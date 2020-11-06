@@ -8,11 +8,11 @@ browser.menus.create(
       "16": "data/svg/icon.svg",
       "32": "data/svg/icon.svg",
     },
-  }, // Initalize RO storage for serialized disk buffer
+  }, // Set initial shortcut keys
   () =>
     browser.storage.local.set({
-      movements: ["k", "j", "g", "G", "n", "t", "e", "x", "s"],
-    }) // Set initial shortcut keys
+      movements: ["k", "j", "n", "g", "G", "t", "e", "x", "s"],
+    }) // Initalize RO storage for serialized disk buffer
   // () => localStorage.setItem("offline_tabs_ro", "")
 );
 // Set used of O(1) operations (goal: minimize injected script overhead)
@@ -42,17 +42,16 @@ function sendOfflineMessage(tabId, tabTitle = "") {
     inMemoryStorage.add(tabId);
   }
   // Add to block list and send notification
-  if (tabTitle) {
-    browser.tabs.executeScript({
-      tabId,
-      code: alertFrontState(offline),
-    });
-    // browser.notifications.create({
-    //   type: "basic",
-    //   title: "RequestOff",
-    //   ...dynamicNotiDetails,
-    // });
-  }
+  // if (tabTitle) {
+  browser.tabs.executeScript(tabId, {
+    code: alertFrontState(offline),
+  });
+  // browser.notifications.create({
+  //   type: "basic",
+  //   title: "RequestOff",
+  //   ...dynamicNotiDetails,
+  // });
+  // }
 }
 // Communicator with popup html
 browser.runtime.onMessage.addListener((data) => {

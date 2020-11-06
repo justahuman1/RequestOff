@@ -14,12 +14,11 @@
 
 ### Minor Todos
 
-- Add Settings page
 - Add a background thread to purge old off-line tabs that are no longer existent
 
 ## Completed
 
-### 0.2.0
+### 0.1.9
 
 #### Added Features
 
@@ -27,6 +26,7 @@
 - Add vim-mode
 - Add auto scroll methods for vim-mode
 - Window Filtering (via UI & shortcut)
+- Add Settings page
 
 #### Fixed Bugs
 
