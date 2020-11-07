@@ -42,10 +42,11 @@ function sendOfflineMessage(tabId, tabTitle = "") {
     inMemoryStorage.add(tabId);
   }
   // Add to block list and send notification
-  // if (tabTitle) {
-  browser.tabs.executeScript(tabId, {
-    code: alertFrontState(offline),
-  });
+  if (tabId > 0) {
+    browser.tabs.executeScript(tabId, {
+      code: alertFrontState(offline),
+    });
+  }
   // browser.notifications.create({
   //   type: "basic",
   //   title: "RequestOff",

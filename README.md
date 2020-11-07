@@ -18,6 +18,11 @@
 
 ## Completed
 
+### 0.1.10
+
+- Bug Fixes (Separate Window State for UI)
+- Close multiple tabs pointer jump bug
+
 ### 0.1.9
 
 #### Added Features

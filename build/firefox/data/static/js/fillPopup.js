@@ -23,38 +23,31 @@ function attachVimShortcuts(e, shortcuts, table) {
   // add the pointer to the next/prev row
   let curPointer = document.getElementById("pointer");
   let curRow = Number(curPointer.getAttribute("data"));
-  let jumpCellHeight = document.body.scrollHeight / trs.length;
-  let tabId;
-  window.scrollTo(0, jumpCellHeight * curRow);
+  let tabId, tempRow;
   switch (e.key) {
     case shortcuts[0]: // Arrow Up
       curPointer.remove();
       curRow -= vimState == "" ? 1 : Number(vimState);
       if (curRow < 1) curRow = 1;
-      trs[curRow <= 0 ? 1 : curRow].children[0].innerHTML = generatePointer(
-        curRow
-      );
-      window.scrollTo(0, jumpCellHeight * curRow);
+      trs[curRow].scrollIntoView();
+      trs[curRow].children[0].innerHTML = generatePointer(curRow);
       vimState = "";
       break;
     case shortcuts[1]: // Arrow Down
       curPointer.remove();
       curRow += vimState == "" ? 1 : Number(vimState);
       if (curRow >= trs.length) curRow = trs.length - 1;
-      let potentialJump = trs.length - 1;
-      trs[
-        curRow > potentialJump ? potentialJump : curRow
-      ].children[0].innerHTML = generatePointer(curRow);
-      window.scrollTo(0, jumpCellHeight * curRow);
+      trs[curRow].children[0].innerHTML = generatePointer(curRow);
+      trs[curRow].scrollIntoView();
       vimState = "";
       break;
     case shortcuts[2]: // Toggle mode
-      let tempRow = vimState == "" ? 1 : Number(vimState);
-      let i = 0;
+      tempRow = vimState == "" ? 1 : Number(vimState);
+      let i = -1,
+        pointerLoc;
       while (curRow + i < trs.length && tempRow > 0) {
-        // TODO: Consider window and tab combination error here
-        let mew = curRow + i;
-        tabId = trs[mew].children[1].children[0].getAttribute("for");
+        pointerLoc = curRow + ++i;
+        tabId = trs[pointerLoc].children[1].children[0].getAttribute("for");
         // Update internal & backend state
         if (tabId == uniqWin) {
           tabState = handleWindowButton(allTabs, tabState);
@@ -63,12 +56,11 @@ function attachVimShortcuts(e, shortcuts, table) {
         }
         // Update current key state (programatically
         // since key's do not trigger touch events)
-        trs[mew].children[1].innerHTML = generateSlider(
+        trs[pointerLoc].children[1].innerHTML = generateSlider(
           tabId,
           Object.keys(tabState[0]).includes(tabId) ? null : "checked"
         );
         tempRow--;
-        i++;
       }
       vimState = "";
       break;
@@ -96,17 +88,19 @@ function attachVimShortcuts(e, shortcuts, table) {
       break;
     case shortcuts[7]: // Close Tab
       // Add while loop to delete vimState amount of tabs
-      tabId = trs[curRow].children[1].children[0].getAttribute("for");
       curPointer.remove();
-      table.deleteRow(curRow);
-      curRow += vimState == "" ? 1 : Number(vimState);
-      if (curRow >= trs.length) curRow = trs.length - 1;
-      trs[
-        curRow > trs.length - 1 ? trs.length - 1 : curRow
-      ].children[0].innerHTML = generatePointer(curRow);
-      browser.tabs.remove(Number(tabId));
-      window.scrollTo(0, jumpCellHeight * curRow);
+      tempRow = vimState == "" ? 1 : Number(vimState);
+      while (curRow < trs.length && tempRow > 0) {
+        tabId = trs[curRow].children[1].children[0].getAttribute("for");
+        table.deleteRow(curRow);
+        browser.tabs.remove(Number(tabId));
+        tempRow--;
+      }
+      const rem = curRow > trs.length - 1 ? trs.length - 1 : curRow;
+      trs[rem].children[0].innerHTML = generatePointer(curRow);
+      trs[rem].scrollIntoView();
       vimState = "";
+      window.close();
       break;
     case shortcuts[8]: // Open global settings
       browser.tabs.create({ url: "../optionsStore/options.html" });
@@ -159,7 +153,9 @@ async function traverseTabs(tabs) {
   const offlineTabs = await browser.runtime.sendMessage({
     type: "getOfflineTabs",
   });
-  const curTabId = (await browser.tabs.query({ active: true }))[0].id;
+  let curTabId = (
+    await browser.tabs.query({ active: true, currentWindow: true })
+  )[0].id;
   trs = document.getElementsByTagName("tr");
   const win = await browser.windows.getCurrent();
   uniqWin = -7781 + win.id;
@@ -174,9 +170,12 @@ async function traverseTabs(tabs) {
     let online;
     if (i == 1) {
       curWinCell = cells[1];
-    } else if (tab.id == curTabId)
+    } else if (tab.id == curTabId) {
       // Add arrow pointer to current tab
       cells[0].innerHTML = generatePointer(row.rowIndex);
+      row.scrollIntoView();
+    }
+
     // Check if tab is in store (background message)
     if (offlineTabs.has(tab.id)) {
       online = 1;
@@ -267,3 +266,39 @@ function fillOnlineTab() {
 }
 // Initalizer function for UI
 fillOnlineTab();
+
+/**
+ * ROff Notification Popup
+
+<div class="v-wrap">
+    <article class="v-box">
+        <p>This is how I've been doing it for some time</p>
+    </article>
+</div>
+
+body,html{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+.v-wrap{
+    height: 100%;
+    text-align: center;
+    white-space: nowrap;
+}
+.v-wrap:before{
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 0;
+    margin-right: -.25em;
+    height: 100%;
+}
+.v-box{
+    display: inline-block;
+    vertical-align: middle;
+    white-space: normal;
+    padding: 0 1em;
+    background: #EEE;
+}
+*/
