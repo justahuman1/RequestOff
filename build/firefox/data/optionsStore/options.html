@@ -29,6 +29,26 @@
     .buttonRight {
       margin:15px 25%
     }
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      background-color: black;
+      color: #fff;
+      text-align: center;
+      padding: 5px 0;
+      border-radius: 6px;
+      position: absolute;
+      z-index: 1;
+      margin-left: 5px;
+      display: inline-block;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+    }
   </style>
 </head>
 <body>
@@ -87,14 +107,40 @@
         </tr>
 
       </table>
-      <!-- <div class="setting" style="display:flex;flex-direction:row"> -->
-      <!--   <p class="option">Move Up: </p> -->
-      <!--   <input placeholder="k"> -->
-      <!-- </div> -->
-      <!-- <div class="setting" style="display:flex;flex-direction:row"> -->
-      <!--   <p class="option">Move Down: </p> -->
-      <!--   <input placeholder="j"> -->
-      <!-- </div> -->
+      <div class="pads">
+        <header style="font-size:16px">Auto-Timer Settings</header>
+      </div>
+      <table class="setting" id="timers">
+        <tr>
+          <th>Action</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td class="option">Enable Timer Mode:</td>
+          <td><input style="margin-left:45%"type="checkbox"></input></td>
+        </tr>
+        <tr>
+          <td class="option">Evict Time:</td>
+          <td>
+            <div class="tooltip">
+            <input placeholder="90"></input>
+            <span style="min-width:320px" class="tooltiptext">The threshold minimum (seconds) to turn the requests for the tab off. Ex: 90 means that any tab that has not been visited in >90 seconds will be evicted to request off.</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="option">Tab Poll Time:</td>
+          <td>
+            <div class="tooltip">
+            <input placeholder="30"></input>
+            <span style="min-width:320px"class="tooltiptext">The interval (seconds) to check the last time a tab has been visited. The larger the number, the smaller the extension's footprint but also increases the standard deviation of evicting a tab to request off.</span>
+            </div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><button id="saveTimer" class="buttonRight">Save</button></td>
+        </tr>
+      </table>
     </div>
   </div>
 </body>

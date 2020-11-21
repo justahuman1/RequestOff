@@ -10,6 +10,35 @@
 //   Show next poll time in the UI?
 //   Let user run poll on command -> button
 
-browser.tabs.onCreated.addListener((i) => {
-  console.log(i);
-});
+const pollTime = 5;
+const evictTime = 30;
+let timerInterval;
+
+// If timer-off mode is enabled, register listener.
+// If turned off, deregister listener.
+
+async function timerUpdate() {
+  clearInterval(timerInterval);
+  let timers = (await browser.storage.local.get("timers")).timers;
+  if (timers[0] == "true") console.log(timers);
+  console.log(timers);
+  timerEnable(Number(timers[1]), Number(timers[2]));
+}
+function timerEnable(pollTime, evictTime) {
+  timerInterval = setInterval(() => {
+    browser.tabs.query({ currentWindow: true }).then((tabs) => {
+      for (let tab of tabs)
+        if (
+          currentUnixTime() - ((tab.lastAccessed / 1000) | 0) > evictTime &&
+          !tab.active &&
+          !inMemoryStorage.has(tab.id)
+        )
+          sendOfflineMessage(tab.id);
+    });
+  }, pollTime * 1000);
+}
+
+function currentUnixTime() {
+  return (new Date().getTime() / 1000) | 0;
+}
+timerUpdate();

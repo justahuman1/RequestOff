@@ -87,10 +87,10 @@ function attachVimShortcuts(e, shortcuts, table) {
       window.close();
       break;
     case shortcuts[7]: // Close Tab
-      // Add while loop to delete vimState amount of tabs
       curPointer.remove();
       tempRow = vimState == "" ? 1 : Number(vimState);
       while (curRow < trs.length && tempRow > 0) {
+        // Add while loop to delete vimState amount of tabs
         tabId = trs[curRow].children[1].children[0].getAttribute("for");
         table.deleteRow(curRow);
         browser.tabs.remove(Number(tabId));

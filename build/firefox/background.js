@@ -5,18 +5,25 @@ browser.menus.create(
     title: "Toggle Tab Requests",
     contexts: ["all"],
     icons: {
-      "16": "data/svg/icon.svg",
-      "32": "data/svg/icon.svg",
+      16: "data/svg/icon.svg",
+      32: "data/svg/icon.svg",
     },
-  }, // Set initial shortcut keys
-  () =>
-    browser.storage.local.set({
-      movements: ["k", "j", "n", "g", "G", "t", "e", "x", "s"],
-    }) // Initalize RO storage for serialized disk buffer
-  // () => localStorage.setItem("offline_tabs_ro", "")
+  },
+  defaultSettings
 );
 // Set used of O(1) operations (goal: minimize injected script overhead)
 const inMemoryStorage = new Set();
+function defaultSettings() {
+  // Set initial shortcut keys
+  browser.storage.local.set({
+    movements: ["k", "j", "n", "g", "G", "t", "e", "x", "s"],
+  });
+  browser.storage.local.set({
+    timers: [false, 90, 30],
+  });
+  // Initalize RO storage for serialized disk buffer
+  // () => localStorage.setItem("offline_tabs_ro", "")
+}
 function alertFrontState(offline) {
   return offline
     ? `document.title = '📵 ' + document.title`
