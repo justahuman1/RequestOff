@@ -10,19 +10,13 @@
 //   Show next poll time in the UI?
 //   Let user run poll on command -> button
 
-const pollTime = 5;
-const evictTime = 30;
-let timerInterval;
-
 // If timer-off mode is enabled, register listener.
 // If turned off, deregister listener.
+let timerInterval;
 
-async function timerUpdate() {
+async function timerUpdate(timers) {
   clearInterval(timerInterval);
-  let timers = (await browser.storage.local.get("timers")).timers;
-  if (timers[0] == "true") console.log(timers);
-  console.log(timers);
-  timerEnable(Number(timers[1]), Number(timers[2]));
+  if (timers[0]) timerEnable(Number(timers[1]), Number(timers[2]));
 }
 function timerEnable(pollTime, evictTime) {
   timerInterval = setInterval(() => {
@@ -32,13 +26,12 @@ function timerEnable(pollTime, evictTime) {
           currentUnixTime() - ((tab.lastAccessed / 1000) | 0) > evictTime &&
           !tab.active &&
           !inMemoryStorage.has(tab.id)
+          // Add a URL filter
         )
           sendOfflineMessage(tab.id);
     });
   }, pollTime * 1000);
 }
-
 function currentUnixTime() {
   return (new Date().getTime() / 1000) | 0;
 }
-timerUpdate();

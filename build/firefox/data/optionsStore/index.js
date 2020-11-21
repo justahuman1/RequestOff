@@ -30,9 +30,9 @@ async function timerListener() {
   let arr = [].slice.call(inputs).map((node) => node.value);
   arr[0] = inputs[0].checked;
   if (isNumeric(arr[1]) && isNumeric(arr[2])) {
+    browser.runtime.sendMessage({ type: "setTimerValues", values: arr });
     browser.storage.local.set({ timers: arr });
-    console.log(evictTime);
-  } else alert("Please input numbers.");
+  } else alert("Please input valid numbers.");
 }
 async function restoreTimerDefaults() {
   let inputs = document.getElementById("timers").querySelectorAll("input");

@@ -75,6 +75,10 @@ browser.runtime.onMessage.addListener((data) => {
       for (let id of data.ids) {
         sendOfflineMessage(Number(id));
       }
+      return;
+    case "setTimerValues":
+      timerUpdate(data.values);
+      return;
     default:
       return;
   }

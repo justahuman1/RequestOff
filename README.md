@@ -15,6 +15,7 @@
 ### Minor Todos
 
 - Add a background thread to purge old off-line tabs that are no longer existent
+- Add a 'No-Off' filter to prevent domains to not be impacted by requestOff
 
 ## Completed
 
