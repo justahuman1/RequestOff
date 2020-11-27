@@ -12,11 +12,12 @@ browser.menus.create(
   defaultSettings
 );
 // Set used of O(1) operations (goal: minimize injected script overhead)
-const inMemoryStorage = new Set();
+const inMemoryStorage = new Set(),
+  excludedTabs = new Set();
 function defaultSettings() {
   // Set initial shortcut keys
   browser.storage.local.set({
-    movements: ["k", "j", "n", "g", "G", "t", "e", "x", "s"],
+    movements: ["k", "j", "n", "g", "G", "t", "e", "i", "x", "s"],
   });
   browser.storage.local.set({
     timers: [false, 90, 30],
@@ -24,42 +25,42 @@ function defaultSettings() {
   // Initalize RO storage for serialized disk buffer
   // () => localStorage.setItem("offline_tabs_ro", "")
 }
-function alertFrontState(offline) {
+function alertFrontState(offline, emoji = "📵") {
   return offline
-    ? `document.title = '📵 ' + document.title`
+    ? `document.title = '${emoji} ' + document.title`
     : `document.title = document.title.substring(2)`;
 }
-function sendOfflineMessage(tabId, tabTitle = "") {
+function sendOfflineMessage(tabId) {
   // Trigger to add tab to inMemoryStorage if not
   // in set. Else, remove. Provides toggle functionality.
-  let dynamicNotiDetails = {};
-  let offline;
-  if (inMemoryStorage.has(tabId)) {
-    dynamicNotiDetails["message"] = "This tab is now live!";
-    dynamicNotiDetails["iconUrl"] = "data/svg/online.svg";
-    offline = false;
-    inMemoryStorage.delete(tabId);
-  } else {
-    // Tab not found in store. Add and Send corresponding noti
-    dynamicNotiDetails[
-      "message"
-    ] = `This tab is now offline: "${tabTitle.substring(0, 15)}..."`;
-    dynamicNotiDetails["iconUrl"] = "data/svg/offline.svg";
-    offline = true;
-    inMemoryStorage.add(tabId);
-  }
+  if (excludedTabs.has(tabId)) return;
+
+  const offline = inMemoryStorage.has(tabId);
+  if (offline) inMemoryStorage.delete(tabId);
+  else inMemoryStorage.add(tabId);
+
   // Add to block list and send notification
   if (tabId > 0) {
     browser.tabs.executeScript(tabId, {
-      code: alertFrontState(offline),
+      code: alertFrontState(!offline),
     });
   }
-  // browser.notifications.create({
-  //   type: "basic",
-  //   title: "RequestOff",
-  //   ...dynamicNotiDetails,
-  // });
-  // }
+}
+function sendExcludedMessage(tabId) {
+  // Trigger to add tab to excludedTabs if not in set.
+  // Else, remove. Provides toggle functionality.
+  const offline = excludedTabs.has(tabId);
+  if (offline) excludedTabs.delete(tabId);
+  else {
+    inMemoryStorage.delete(tabId);
+    excludedTabs.add(tabId);
+  }
+
+  if (tabId > 0)
+    // Add to exclude list
+    browser.tabs.executeScript(tabId, {
+      code: alertFrontState(!offline, "🔒"),
+    });
 }
 // Communicator with popup html
 browser.runtime.onMessage.addListener((data) => {
@@ -79,6 +80,9 @@ browser.runtime.onMessage.addListener((data) => {
     case "setTimerValues":
       timerUpdate(data.values);
       return;
+    case "toggleExcludedTab":
+      sendExcludedMessage(Number(data.id));
+      return;
     default:
       return;
   }
@@ -88,7 +92,14 @@ browser.commands.onCommand.addListener((command) => {
   // Dispatch offline mode on current active tab
   if (command === "toggle-requests-in-tab") {
     browser.tabs.query({ currentWindow: true, active: true }).then(
-      (res) => sendOfflineMessage(res[0].id, res[0].title),
+      (tab) => sendOfflineMessage(tab[0].id),
+      () => console.log("Shortcut Instantiation Failed")
+    );
+  } else if (command === "toggle-requests-in-window") {
+    browser.tabs.query({ currentWindow: true }).then(
+      (res) => {
+        for (let tab of res) sendOfflineMessage(tab.id);
+      },
       () => console.log("Shortcut Instantiation Failed")
     );
   }
@@ -102,7 +113,7 @@ function normalizeGetLocalStorage() {
 }
 browser.menus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId == "offline-tab") {
-    sendOfflineMessage(Number(tab.id), tab.title);
+    sendOfflineMessage(Number(tab.id));
     // Inject content script to monitor and prompt for going online
     // browser.tabs.executeScript({
     //   code: `alert("location:${}");`,

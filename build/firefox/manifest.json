@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "RequestOff",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "author": "justahuman1",
   "description": "Unnecessary Javascript is the worst. Let's regain control of your browser!",
   "homepage_url": "https://www.github.com/justahuman1/RequestOff",
@@ -43,6 +43,14 @@
         "default": "Alt+Shift+R",
         "linux": "Alt+Shift+R",
         "mac": "Command+Shift+E"
+      },
+      "description": "Toggle requests for the current tab"
+    },
+    "toggle-requests-in-window": {
+      "suggested_key": {
+        "default": "Alt+Shift+W",
+        "linux": "Alt+Shift+W",
+        "mac": "Command+Shift+W"
       },
       "description": "Toggle requests for the current tab"
     },

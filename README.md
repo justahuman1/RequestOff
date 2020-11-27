@@ -6,7 +6,6 @@
 
 ## Todos
 
-- Add a timer filtering mode
 - Domain Filtering
 - Aggressive Block Mode (Auto turn off requests and turn on during user interaction)
 - Add a disk buffer in Local Storage
@@ -18,6 +17,10 @@
 - Add a 'No-Off' filter to prevent domains to not be impacted by requestOff
 
 ## Completed
+
+## 0.1.11
+
+- Add a timer filtering mode
 
 ### 0.1.10
 

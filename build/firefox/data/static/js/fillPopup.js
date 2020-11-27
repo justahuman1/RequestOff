@@ -37,8 +37,8 @@ function attachVimShortcuts(e, shortcuts, table) {
       curPointer.remove();
       curRow += vimState == "" ? 1 : Number(vimState);
       if (curRow >= trs.length) curRow = trs.length - 1;
-      trs[curRow].children[0].innerHTML = generatePointer(curRow);
       trs[curRow].scrollIntoView();
+      trs[curRow].children[0].innerHTML = generatePointer(curRow);
       vimState = "";
       break;
     case shortcuts[2]: // Toggle mode
@@ -86,7 +86,18 @@ function attachVimShortcuts(e, shortcuts, table) {
     case shortcuts[6]: // Close Popup
       window.close();
       break;
-    case shortcuts[7]: // Close Tab
+    case shortcuts[7]: // Ignore Tab
+      // TODO: Allow motions
+      // TODO: If tab is in offline, turn it back online (UI)
+      tabId = trs[curRow].children[1].children[0].getAttribute("for");
+      browser.runtime.sendMessage({ type: "toggleExcludedTab", id: tabId });
+      console.log(trs[curRow].children[1].children[0].children[1]);
+      trs[curRow].children[1].children[0].children[1].setAttribute(
+        "style",
+        "background-color: #ccc;"
+      );
+      break;
+    case shortcuts[8]: // Close Tab
       curPointer.remove();
       tempRow = vimState == "" ? 1 : Number(vimState);
       while (curRow < trs.length && tempRow > 0) {
