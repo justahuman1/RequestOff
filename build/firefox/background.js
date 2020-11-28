@@ -11,6 +11,18 @@ browser.menus.create(
   },
   defaultSettings
 );
+browser.menus.create(
+  // Used for context menu (quick toggle)
+  {
+    id: "exclude-tab",
+    title: "Ignore Tab",
+    contexts: ["all"],
+    icons: {
+      16: "data/svg/icon.svg",
+      32: "data/svg/icon.svg",
+    },
+  }
+);
 // Set used of O(1) operations (goal: minimize injected script overhead)
 const inMemoryStorage = new Set(),
   excludedTabs = new Set();
@@ -38,7 +50,6 @@ function sendOfflineMessage(tabId) {
   const offline = inMemoryStorage.has(tabId);
   if (offline) inMemoryStorage.delete(tabId);
   else inMemoryStorage.add(tabId);
-
   // Add to block list and send notification
   if (tabId > 0) {
     browser.tabs.executeScript(tabId, {
@@ -52,10 +63,14 @@ function sendExcludedMessage(tabId) {
   const offline = excludedTabs.has(tabId);
   if (offline) excludedTabs.delete(tabId);
   else {
-    inMemoryStorage.delete(tabId);
+    if (inMemoryStorage.has(tabId)) {
+      inMemoryStorage.delete(tabId);
+      browser.tabs.executeScript(tabId, {
+        code: alertFrontState(offline),
+      });
+    }
     excludedTabs.add(tabId);
   }
-
   if (tabId > 0)
     // Add to exclude list
     browser.tabs.executeScript(tabId, {
@@ -68,6 +83,9 @@ browser.runtime.onMessage.addListener((data) => {
     case "getOfflineTabs":
       // Send store to frontend
       return Promise.resolve(inMemoryStorage);
+    case "getExcludedTabs":
+      // Send store to frontend
+      return Promise.resolve(excludedTabs);
     case "toggleOfflineTab":
       // Get UI change and update store
       sendOfflineMessage(Number(data.id));
@@ -119,6 +137,7 @@ browser.menus.onClicked.addListener(async (info, tab) => {
     //   code: `alert("location:${}");`,
     // });
   }
+  if (info.menuItemId == "exclude-tab") sendExcludedMessage(Number(tab.id));
 });
 // function injectConfirmGoingOnline() {}
 function cancelRequest(requestDetails) {

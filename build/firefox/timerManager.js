@@ -13,7 +13,6 @@
 // If timer-off mode is enabled, register listener.
 // If turned off, deregister listener.
 let timerInterval;
-
 async function timerUpdate(timers) {
   clearInterval(timerInterval);
   if (timers[0]) timerEnable(Number(timers[1]), Number(timers[2]));
@@ -23,15 +22,17 @@ function timerEnable(pollTime, evictTime) {
     browser.tabs.query({ currentWindow: true }).then((tabs) => {
       for (let tab of tabs)
         if (
-          currentUnixTime() - ((tab.lastAccessed / 1000) | 0) > evictTime &&
-          !tab.active &&
-          !inMemoryStorage.has(tab.id)
+          !tab.active && // Not active
+          !inMemoryStorage.has(tab.id) && // Not already offline
+          !excludedTabs.has(tab.id) && // Not in excluded set
+          unixTime(new Date().getTime()) - unixTime(tab.lastAccessed) >
+            evictTime
           // Add a URL filter
         )
           sendOfflineMessage(tab.id);
     });
   }, pollTime * 1000);
 }
-function currentUnixTime() {
-  return (new Date().getTime() / 1000) | 0;
+function unixTime(epochTimestamp) {
+  return (epochTimestamp / 1000) | 0;
 }
