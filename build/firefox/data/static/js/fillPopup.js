@@ -3,10 +3,11 @@ let trs,
   uniqWin,
   // Pointer to window cell element
   curWinCell,
-  // Window option data
-  allTabs = new Set(),
+  excludedTabs;
+// Window option data
+(allTabs = new Set()),
   // [OnlineTabs, OfflineTabs]
-  tabState = [{}, {}];
+  (tabState = [{}, {}]);
 
 function generateSlider(tabId, offline) {
   // Dynamic Slider element
@@ -18,9 +19,8 @@ function generatePointer(data) {
   return `<p id="pointer" data="${data}">➠</p>`;
 }
 function attachVimShortcuts(e, shortcuts, table) {
-  // Supports Vim mode for UI
-  // Get the data number -> ++/--data
-  // add the pointer to the next/prev row
+  // Supports Vim mode for UI  - Get the data number
+  // -> ++/--data & add the pointer to the next/prev row
   let curPointer = document.getElementById("pointer");
   let curRow = Number(curPointer.getAttribute("data"));
   let tabId, tempRow;
@@ -48,6 +48,10 @@ function attachVimShortcuts(e, shortcuts, table) {
       while (curRow + i < trs.length && tempRow > 0) {
         pointerLoc = curRow + ++i;
         tabId = trs[pointerLoc].children[1].children[0].getAttribute("for");
+        if (excludedTabs.has(Number(tabId))) {
+          tempRow--;
+          continue;
+        }
         // Update internal & backend state
         if (tabId == uniqWin) {
           tabState = handleWindowButton(allTabs, tabState);
@@ -89,31 +93,32 @@ function attachVimShortcuts(e, shortcuts, table) {
     case shortcuts[7]: // Ignore Tab
       // TODO: Allow motions
       // TODO: If tab is in offline, turn it back online (UI)
-      tabId = trs[curRow].children[1].children[0].getAttribute("for");
+      tabId = Number(trs[curRow].children[1].children[0].getAttribute("for"));
       browser.runtime.sendMessage({ type: "toggleExcludedTab", id: tabId });
-      console.log(trs[curRow].children[1].children[0].children[1]);
-      trs[curRow].children[1].children[0].children[1].setAttribute(
-        "style",
-        "background-color: #ccc;"
-      );
+      // trs[curRow].children[1].children[0].children[1].setAttribute(
+      //   "style",
+      //   "background-color: #ccc;"
+      // );
+      if (excludedTabs.has(tabId)) excludedTabs.delete(tabId);
+      else excludedTabs.add(tabId);
       break;
     case shortcuts[8]: // Close Tab
+      if (curRow == 1) break;
       curPointer.remove();
       tempRow = vimState == "" ? 1 : Number(vimState);
       while (curRow < trs.length && tempRow > 0) {
         // Add while loop to delete vimState amount of tabs
-        tabId = trs[curRow].children[1].children[0].getAttribute("for");
+        tabId = Number(trs[curRow].children[1].children[0].getAttribute("for"));
         table.deleteRow(curRow);
-        browser.tabs.remove(Number(tabId));
+        browser.tabs.remove(tabId);
         tempRow--;
       }
       const rem = curRow > trs.length - 1 ? trs.length - 1 : curRow;
       trs[rem].children[0].innerHTML = generatePointer(curRow);
       trs[rem].scrollIntoView();
       vimState = "";
-      window.close();
       break;
-    case shortcuts[8]: // Open global settings
+    case shortcuts[9]: // Open global settings
       browser.tabs.create({ url: "../optionsStore/options.html" });
       window.close();
       break;
@@ -138,7 +143,10 @@ function toggleAllUI(onlineTabs) {
     1
   );
   for (let slider of sliders) {
-    if (onlineTabs.has(Number(slider.id))) slider.checked = !slider.checked;
+    const sliderId = Number(slider.id);
+    if (onlineTabs.has(sliderId) && !excludedTabs.has(sliderId)) {
+      slider.checked = !slider.checked;
+    }
   }
 }
 function stateTransaction(tabState, curWinCell, checked = false) {
@@ -163,6 +171,9 @@ async function traverseTabs(tabs) {
   );
   const offlineTabs = await browser.runtime.sendMessage({
     type: "getOfflineTabs",
+  });
+  excludedTabs = await browser.runtime.sendMessage({
+    type: "getExcludedTabs",
   });
   let curTabId = (
     await browser.tabs.query({ active: true, currentWindow: true })
@@ -194,11 +205,14 @@ async function traverseTabs(tabs) {
     } else {
       online = 0;
       cells[1].innerHTML = generateSlider(tab.id);
-      unseen = i == 1 ? false : true;
+      // Sticky lock -> If ever set to true, cannot be unset
+      unseen =
+        (tab.id == uniqWin || excludedTabs.has(tab.id)) && !unseen
+          ? false
+          : true;
     }
     tabState[online][tab.id] = {
       element: cells[1],
-      checked: online == 0 ? true : false,
     };
     allTabs.add(tab.id);
     // Title cell (same amount of chars as default tab length)
@@ -226,12 +240,17 @@ function buttonClickListener(event, uniqWin) {
   }
 }
 function handleTabButton(allTabs, tabState, uiClickedId) {
+  // let remTabSize = allTabs.size - excludedTabs.size; // -1 for window button
   if (uiClickedId in tabState[0]) {
     // Requests Online => Off
     tabState = swapState(tabState, true, uiClickedId);
-    if (Object.keys(tabState[1]).length == allTabs.size - 1) {
+    let remTabSize = allTabs.size - excludedTabs.size;
+    let offSize = Object.keys(tabState[1]).length;
+    if (
+      offSize == remTabSize ||
+      (uniqWin in tabState[0] && offSize + 1 == remTabSize)
+    )
       tabState = stateTransaction(tabState, curWinCell, true);
-    }
   } else {
     // Requests Offline => On
     tabState = swapState(tabState, false, uiClickedId);
@@ -251,20 +270,39 @@ function windowMessenger(tabs) {
   toggleAllUI(tabs);
 }
 function handleWindowButton(allTabs, tabState) {
-  if (Object.keys(tabState[1]).length == allTabs.size) {
+  // let remTabSize = ;
+  console.log(`All Tabs: ${allTabs.size}`);
+  console.log(`Online Tabs: ${Object.keys(tabState[0]).length}`);
+  console.log(`Offline Tabs: ${Object.keys(tabState[1]).length}`);
+  console.log(`Excluded Tabs: ${excludedTabs.size}`);
+  // console.log(`Rem Tabs: ${remTabSize}`);
+  if (Object.keys(tabState[1]).length == allTabs.size - excludedTabs.size) {
     // Requests Offline => On
     tabState = [{ ...tabState[0], ...tabState[1] }, {}];
     windowMessenger(allTabs);
-  } else if (Object.keys(tabState[0]).length == allTabs.size) {
+  } else if (
+    Object.keys(tabState[0]).length ==
+    allTabs.size - excludedTabs.size
+  ) {
     // Requests Online => Off
     tabState = [{}, { ...tabState[0], ...tabState[1] }];
+    for (let mew in tabState[1]) {
+      let numMew = Number(mew);
+      if (excludedTabs.has(numMew)) delete tabState[1][numMew];
+    }
     windowMessenger(allTabs);
   } else {
     // `x` online tabs and `y` offline tabs
     // Turns `x` online tabs to offline
     let curOnlineTabs = new Set(Object.keys(tabState[0]).map((i) => Number(i)));
-    windowMessenger(curOnlineTabs);
     tabState = [{}, { ...tabState[0], ...tabState[1] }];
+    for (let mew in tabState[1]) {
+      let numMew = Number(mew);
+      if (excludedTabs.has(numMew)) {
+        delete tabState[1][numMew];
+      }
+    }
+    windowMessenger(curOnlineTabs);
   }
   return tabState;
 }
