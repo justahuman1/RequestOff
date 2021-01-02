@@ -62,18 +62,30 @@ function attachVimShortcuts(e, shortcuts, table) {
           tempRow--;
           continue;
         }
+        let checked;
         // Update internal & backend state
         if (tabId == uniqWin) {
           tabState = handleWindowButton(allTabs, tabState);
+          checked = Object.keys(tabState[0]).includes(tabId) ? null : "checked";
+          let markAll = curRow + 1;
+          while (markAll < trs.length) {
+            console.log("Marking: " + markAll);
+            console.log(trs[markAll].innerText);
+            trs[markAll].children[2].innerText = checked
+              ? "📵 " + trs[markAll].children[2].innerText
+              : trs[markAll].children[2].innerText.substring(2);
+            markAll++;
+          }
         } else {
           tabState = handleTabButton(allTabs, tabState, tabId);
+          checked = Object.keys(tabState[0]).includes(tabId) ? null : "checked";
         }
         // Update current key state (programatically
         // since key's do not trigger touch events)
-        trs[pointerLoc].children[1].innerHTML = generateSlider(
-          tabId,
-          Object.keys(tabState[0]).includes(tabId) ? null : "checked"
-        );
+        trs[pointerLoc].children[1].innerHTML = generateSlider(tabId, checked);
+        trs[curRow].children[2].innerText = checked
+          ? "📵 " + trs[curRow].children[2].innerText
+          : trs[curRow].children[2].innerText.substring(2);
         tempRow--;
       }
       vimState = "";
@@ -107,6 +119,9 @@ function attachVimShortcuts(e, shortcuts, table) {
       browser.runtime.sendMessage({ type: "toggleExcludedTab", id: tabId });
       if (excludedTabs.has(tabId)) {
         trs[curRow].children[1].innerHTML = generateSlider(tabId, null);
+        trs[curRow].children[2].innerHTML = trs[
+          curRow
+        ].children[2].innerHTML.substring(2);
         excludedTabs.delete(tabId);
       } else {
         trs[curRow].children[1].innerHTML = generateSlider(
@@ -114,6 +129,8 @@ function attachVimShortcuts(e, shortcuts, table) {
           "disabled",
           "background-color: #752828"
         );
+        trs[curRow].children[2].innerHTML =
+          "🔒" + trs[curRow].children[2].innerHTML;
         excludedTabs.add(tabId);
       }
       syncExcluded();

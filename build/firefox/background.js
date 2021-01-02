@@ -65,9 +65,10 @@ function sendExcludedMessage(tabId) {
   else {
     if (inMemoryStorage.has(tabId)) {
       inMemoryStorage.delete(tabId);
-      browser.tabs.executeScript(tabId, {
-        code: alertFrontState(offline),
-      });
+      if (tabId > 0)
+        browser.tabs.executeScript(tabId, {
+          code: alertFrontState(offline),
+        });
     }
     excludedTabs.add(tabId);
   }
