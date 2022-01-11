@@ -2,7 +2,13 @@
 
 ## What is RequestOff?
 
+Control what JavaScript executes on **your** web-browser! RequestOff allows you to load the initial JavaScript required to load single-page applications but disables all dynamic Javascript after the content is loaded.
+
 ### Why would I use this?
+
+A good amount of users do not need all the interactivity provided by JavaScript (you would be surprised). While one could disable Javascript in the `about:config` section of a browser, this removes the control to allow JavaScript execution on certain tabs, for a certain moment of time.
+
+RequestOff provides the user the control to disable JavaScript per tab, based on time, activity, or even DOM loading phases. This allows you to use *just* the right level of JS support that you require. No more pesky telemetry whenever your cursor moves!
 
 ## Todos
 
